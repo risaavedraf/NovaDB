@@ -13,7 +13,7 @@ Combines vector search, automatic hierarchy, and simple persistence — in a sin
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # Clone & run
-git clone https://github.com/tu-usuario/novadb.git
+git clone https://github.com/risaavedraf/NovaDB.git
 cd novadb
 
 uv sync                   # installs everything automatically
@@ -26,7 +26,7 @@ uv run python -c "from novadb.novadb import NovaDB; print('NovaDB OK')"
 ### Option B — `pip` + venv (traditional)
 
 ```bash
-git clone https://github.com/tu-usuario/novadb.git
+git clone https://github.com/risaavedraf/NovaDB.git
 cd novadb
 
 python -m venv venv
