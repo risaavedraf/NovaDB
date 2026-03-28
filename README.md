@@ -6,8 +6,26 @@ Combines vector search, automatic hierarchy, and simple persistence — in a sin
 
 ## Quick Start
 
+### Option A — `uv` (recommended, no venv management needed)
+
 ```bash
-# 1. Clone & setup
+# Install uv once (Linux / WSL / macOS)
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Clone & run
+git clone https://github.com/tu-usuario/novadb.git
+cd novadb
+
+uv sync                   # installs everything automatically
+cp .env.example .env      # add your GEMINI_API_KEY (optional)
+
+# Verify
+uv run python -c "from novadb.novadb import NovaDB; print('NovaDB OK')"
+```
+
+### Option B — `pip` + venv (traditional)
+
+```bash
 git clone https://github.com/tu-usuario/novadb.git
 cd novadb
 
@@ -15,17 +33,8 @@ python -m venv venv
 source venv/bin/activate        # Linux / WSL / macOS
 # or: .\venv\Scripts\activate   # Windows
 
-pip install -r requirements.txt
-
-# 2. Configure (API key is optional — system falls back to local embeddings)
+pip install -e ".[all]"
 cp .env.example .env
-# Edit .env → set GEMINI_API_KEY=your_key  (or leave empty for offline mode)
-
-# 3. Install the MCP server
-pip install -e ./novadb-mcp
-
-# 4. Verify
-python -c "from novadb.novadb import NovaDB; db = NovaDB(); print('NovaDB OK')"
 ```
 
 ## Connecting to an AI Agent (MCP)
@@ -39,6 +48,20 @@ cp .env.example .env
 ```
 
 **Step 2:** Add to your agent's MCP config (opencode, Antigravity, Claude Desktop, etc.):
+
+**With `uv` (recommended):**
+```json
+{
+  "mcpServers": {
+    "novadb": {
+      "command": "uv",
+      "args": ["run", "--project", "/path/to/novadb", "-m", "novadb_mcp.server"]
+    }
+  }
+}
+```
+
+**With venv:**
 ```json
 {
   "mcpServers": {
@@ -50,8 +73,8 @@ cp .env.example .env
 }
 ```
 
-> **WSL tip:** run `which python` inside your activated venv to get the exact path.  
-> **Windows tip:** use `.\venv\Scripts\python.exe` and full absolute path.
+> **WSL tip:** run `which uv` or `which python` to get the exact path.  
+> **Windows tip:** use full absolute path to `venv\Scripts\python.exe`.
 
 ## MindReader — 3D Visualization
 
