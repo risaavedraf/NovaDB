@@ -14,7 +14,7 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # Clone & run
 git clone https://github.com/risaavedraf/NovaDB.git
-cd novadb
+cd NovaDB
 
 uv sync                   # installs everything automatically
 cp .env.example .env      # add your GEMINI_API_KEY (optional)
@@ -27,7 +27,7 @@ uv run python -c "from novadb.novadb import NovaDB; print('NovaDB OK')"
 
 ```bash
 git clone https://github.com/risaavedraf/NovaDB.git
-cd novadb
+cd NovaDB
 
 python -m venv venv
 source venv/bin/activate        # Linux / WSL / macOS
