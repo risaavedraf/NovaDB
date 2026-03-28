@@ -1,0 +1,45 @@
+# Entornos Virtuales
+venv/
+env/
+.venv/
+
+# Variables de entorno y secretos (CRÍTICO)
+.env
+.env.local
+
+# Cache de Python y compilados
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
+*.egg
+dist/
+build/
+
+# Archivos de datos generados localmente por NovaDB
+db/
+exports/
+*.msgpack
+nova_*.json
+nova_*.graph
+*.json
+
+# Excepciones JSON (ejemplos de config no se suben de momento)
+novadb-mcp/examples/*.json
+
+# IDEs de desarrollo
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# NovaDB MCP
+novadb-mcp/src/novadb_mcp.egg-info/
+novadb-mcp/dist/
+novadb-mcp/build/
+
+# Documentos internos de planificación (no van al repo público)
+_planning/
