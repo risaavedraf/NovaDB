@@ -42,36 +42,52 @@ def analizar() -> Dict[str, Any]:
         return {"success": False, "error": str(e)}
 
 
-def consolidar(umbral: float = 0.70) -> Dict[str, Any]:
+def consolidar_proponer(umbral: float = 0.82) -> Dict[str, Any]:
     """
-    Ejecuta consolidación masiva de nodos huérfanos.
-    Delega al Consolidator del core.
+    FASE 1: Propone agrupaciones semánticas de nodos huérfanos sin alterar la DB.
     
     Args:
-        umbral: Similitud mínima para agrupar (0.0-1.0, default: 0.70)
-    
-    Returns:
-        Resultado de la consolidación con grupos creados
+        umbral: Similitud mínima para agrupar (Default: 0.82)
     """
     try:
         db = get_db()
-        resultado = db.consolidator.consolidar_masivo(umbral)
+        resultado = db.consolidar_proponer(umbral)
+        return {
+            "success": True,
+            "huerfanos": resultado["huerfanos"],
+            "grupos_propuestos": resultado["grupos"],
+            "message": f"Se proponen {len(resultado['grupos'])} grupos a partir de {resultado['huerfanos']} huérfanos. Revisa los nombres sugeridos y usa 'consolidar_ejecutar' enviando los IDs de los nodos que deseas agrupar y su nombre real."
+        }
+    except Exception as e:
+        logger.error("Error proponiendo consolidación: %s", e)
+        return {"success": False, "error": str(e)}
+
+def consolidar_ejecutar(nodo_ids: list[str], nombre: str) -> Dict[str, Any]:
+    """
+    FASE 2: Ejecuta la consolidación creando un nodo MEDIO con el nombre proporcionado.
+    
+    Args:
+        nodo_ids: Lista de IDs de nodos MEMORIA a agrupar.
+        nombre: Nombre que se pondrá al nodo MEDIO.
+    """
+    try:
+        db = get_db()
+        grupos_input = [{"nodo_ids": nodo_ids, "nombre": nombre}]
+        resultado = db.consolidar_ejecutar(grupos_input)
         
         if resultado["grupos_creados"] > 0:
             db.save(get_config().db_path)
-        
+            
         return {
             "success": True,
-            "huerfanos_antes": resultado["huerfanos"],
-            "grupos_encontrados": resultado["grupos_encontrados"],
             "grupos_creados": resultado["grupos_creados"],
-            "medios_creados": resultado["creados"],
-            "message": f"✅ {resultado['grupos_creados']} grupos consolidados de {resultado['huerfanos']} huérfanos"
+            "creados": resultado["creados"],
+            "errores": resultado["errores"],
+            "message": f"✅ Creado nodo MEDIO '{nombre}' agrupando {len(nodo_ids)} memorias." if resultado["grupos_creados"] > 0 else "❌ No se pudo crear el grupo."
         }
     except Exception as e:
-        logger.error("Error consolidating: %s", e)
+        logger.error("Error al ejecutar consolidación: %s", e)
         return {"success": False, "error": str(e)}
-
 
 def rebalancear() -> Dict[str, Any]:
     """
@@ -100,10 +116,13 @@ def register(mcp):
     def _analizar() -> Dict[str, Any]:
         return analizar()
     
-    @mcp.tool(name="consolidar", description="Consolida nodos huérfanos en categorías MEDIO automáticamente.")
-    def _consolidar(umbral: float = 0.70) -> Dict[str, Any]:
-        """Consolida nodos huérfanos en categorías MEDIO automáticamente."""
-        return consolidar(umbral)
+    @mcp.tool(name="consolidar_proponer", description="FASE 1: Propuesta. Busca nodos huérfanos superpuestos semánticamente y propone clusters para convertirlos en grupos MEDIO, SIN afectar el grafo. Devuelve listas de nodos y nombres sugeridos.")
+    def _consolidar_proponer(umbral: float = 0.82) -> Dict[str, Any]:
+        return consolidar_proponer(umbral)
+
+    @mcp.tool(name="consolidar_ejecutar", description="FASE 2: Ejecución. Recibe una lista de IDs de nodos huérfanos y un 'nombre' descriptivo humano, y los agrupa creando y conectando un nodo MEDIO a su MACRO de forma definitiva.")
+    def _consolidar_ejecutar(nodo_ids: list[str], nombre: str) -> Dict[str, Any]:
+        return consolidar_ejecutar(nodo_ids, nombre)
     
     @mcp.tool(name="rebalancear", description="Fuerza un rebalanceo del grafo de memoria y reorganiza nodos.")
     def _rebalancear() -> Dict[str, Any]:

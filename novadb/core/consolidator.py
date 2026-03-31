@@ -45,7 +45,7 @@ class Consolidator:
         self,
         graph: NovaGraph,
         embedder: BaseEmbedder,
-        umbral_consolidacion: float = 0.75,
+        umbral_consolidacion: float = 0.82,
         llm_namer: Optional[LlmNamer] = None,
     ) -> None:
         self.graph = graph
@@ -132,36 +132,27 @@ class Consolidator:
 
         return self._nombrar_grupo_offline(textos)
 
-    def consolidar_masivo(self, umbral: Optional[float] = None) -> Dict[str, Any]:
-        """
-        Consolidación masiva de todos los huérfanos del grafo.
-        Usa el umbral de similitud pasado o el de instancia.
-        
-        Returns:
-            Dict con cantidad de huérfanos procesados, grupos encontrados, grupos creados.
-        """
-        threshold = umbral if umbral is not None else self.umbral_consolidacion
-        
-        huerfanos = [
+    def _get_huerfanos(self) -> List[Node]:
+        """Retorna todas las memorias sin padre MEDIO."""
+        return [
             n for n in self.graph.nodes.values()
             if n.tipo == "MEMORIA" and not any(
                 self.graph.nodes.get(p) and self.graph.nodes[p].tipo == "MEDIO"
                 for p in n.padres
             )
         ]
-        
-        if not huerfanos:
-            return {"huerfanos": 0, "grupos_encontrados": 0, "grupos_creados": 0, "creados": []}
-        
+
+    def _detectar_grupos(self, huerfanos: List[Node], threshold: float) -> List[List[Node]]:
+        """Agrupa huérfanos por similitud coseno. Algoritmo greedy seed-based."""
         grupos: List[List[Node]] = []
         usados = set()
-        
+
         for h in huerfanos:
             if h.id in usados:
                 continue
             grupo = [h]
             usados.add(h.id)
-            
+
             for otro in huerfanos:
                 if otro.id in usados:
                     continue
@@ -169,26 +160,124 @@ class Consolidator:
                     if similitud_coseno(h.vector, otro.vector) >= threshold:
                         grupo.append(otro)
                         usados.add(otro.id)
-            
+
             if len(grupo) >= self.threshold_optimo():
                 grupos.append(grupo)
-        
+
+        return grupos
+
+    def proponer(self, umbral: Optional[float] = None) -> Dict[str, Any]:
+        """
+        FASE 1: Analiza los huérfanos y propone grupos semánticos SIN crear nada.
+
+        Devuelve los clusters encontrados con nombres sugeridos (offline).
+        El agente puede revisar, renombrar y luego llamar a ejecutar_grupos().
+
+        Returns:
+            {
+                "huerfanos": int,
+                "grupos": [
+                    {
+                        "nodo_ids": ["id1", "id2", ...],
+                        "nombre_sugerido": "Arquitectura NovaDB",
+                        "preview": ["texto corto nodo1", ...]
+                    }
+                ]
+            }
+        """
+        threshold = umbral if umbral is not None else self.umbral_consolidacion
+        huerfanos = self._get_huerfanos()
+
+        if not huerfanos:
+            return {"huerfanos": 0, "grupos": []}
+
+        grupos_raw = self._detectar_grupos(huerfanos, threshold)
+
+        grupos_output = []
+        for grupo in grupos_raw:
+            textos = [n.text for n in grupo]
+            nombre_sugerido = self._nombrar_grupo_offline(textos)
+            grupos_output.append({
+                "nodo_ids": [n.id for n in grupo],
+                "nombre_sugerido": nombre_sugerido,
+                "preview": [t[:80] for t in textos[:3]],
+                "size": len(grupo),
+            })
+
+        return {
+            "huerfanos": len(huerfanos),
+            "grupos": grupos_output,
+        }
+
+    def ejecutar_grupos(self, grupos: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """
+        FASE 2: Crea los nodos MEDIO con los nombres decididos por el agente.
+
+        Args:
+            grupos: Lista de dicts con:
+                - nodo_ids: list[str]  — IDs de las memorias a agrupar
+                - nombre: str          — Nombre definitivo del nodo MEDIO
+
+        Returns:
+            Dict con grupos creados y errores.
+        """
+        creados = []
+        errores = []
+
+        for g in grupos:
+            nombre = g.get("nombre", "").strip()
+            nodo_ids = g.get("nodo_ids", [])
+
+            if not nombre or not nodo_ids:
+                errores.append({"error": "nombre o nodo_ids vacíos", "grupo": g})
+                continue
+
+            nodos = [self.graph.nodes[nid] for nid in nodo_ids if nid in self.graph.nodes]
+            if len(nodos) < 2:
+                errores.append({"error": "menos de 2 nodos válidos", "nombre": nombre})
+                continue
+
+            nodo = self._ejecutar_consolidacion(nodos, nombre_override=nombre)
+            if nodo:
+                creados.append({"id": nodo.id, "text": nodo.text, "hijos": len(nodo.hijos)})
+            else:
+                errores.append({"error": "fallo al crear MEDIO", "nombre": nombre})
+
+        return {
+            "grupos_creados": len(creados),
+            "creados": creados,
+            "errores": errores,
+        }
+
+    def consolidar_masivo(self, umbral: Optional[float] = None) -> Dict[str, Any]:
+        """
+        Consolidación automática de una sola pasada (alias legacy).
+        Para mayor control usa proponer() + ejecutar_grupos().
+        """
+        threshold = umbral if umbral is not None else self.umbral_consolidacion
+        huerfanos = self._get_huerfanos()
+
+        if not huerfanos:
+            return {"huerfanos": 0, "grupos_encontrados": 0, "grupos_creados": 0, "creados": []}
+
+        grupos = self._detectar_grupos(huerfanos, threshold)
         creados = []
         for grupo in grupos:
             nodo = self._ejecutar_consolidacion(grupo)
             if nodo:
                 creados.append(nodo)
-        
+
         return {
             "huerfanos": len(huerfanos),
             "grupos_encontrados": len(grupos),
             "grupos_creados": len(creados),
-            "creados": [{"id": n.id, "text": n.text} for n in creados]
+            "creados": [{"id": n.id, "text": n.text} for n in creados],
         }
-        
-    def _ejecutar_consolidacion(self, grupo: List[Node]) -> Optional[Node]:
+
+
+    def _ejecutar_consolidacion(self, grupo: List[Node], nombre_override: Optional[str] = None) -> Optional[Node]:
         textos = [n.text for n in grupo]
-        concepto = self._nombrar_grupo(textos)
+        concepto = nombre_override if nombre_override else self._nombrar_grupo(textos)
 
         try:
             vector_concepto = self.embedder.encode(concepto)
@@ -206,15 +295,25 @@ class Consolidator:
             self.graph.insert(nuevo_medio)
 
             for nodo in grupo:
-                for pid in list(nodo.padres):
-                    padre_viejo = self.graph.nodes.get(pid)
-                    if padre_viejo and padre_viejo.tipo == "MACRO":
-                        nodo.padres.remove(pid)
-                        if nodo.id in padre_viejo.hijos:
-                            padre_viejo.hijos.remove(nodo.id)
+                # Jerarquía múltiple: una MEMORIA conserva su MACRO y gana un MEDIO.
+                if nuevo_medio.id not in nodo.padres:
+                    nodo.padres.append(nuevo_medio.id)
+                if nodo.id not in nuevo_medio.hijos:
+                    nuevo_medio.hijos.append(nodo.id)
 
-                nodo.padres.append(nuevo_medio.id)
-                nuevo_medio.hijos.append(nodo.id)
+            # Conectar el MEDIO al MACRO más similar del grafo.
+            # Así nunca queda huérfano en el árbol jerárquico.
+            macros = [n for n in self.graph.nodes.values() if n.tipo == "MACRO"]
+            if macros and vector_concepto is not None:
+                mejor_macro = max(
+                    macros,
+                    key=lambda m: similitud_coseno(vector_concepto, m.vector) if m.vector is not None else 0.0
+                )
+                if nuevo_medio.id not in mejor_macro.hijos:
+                    mejor_macro.hijos.append(nuevo_medio.id)
+                if mejor_macro.id not in nuevo_medio.padres:
+                    nuevo_medio.padres.append(mejor_macro.id)
+                logger.info(f"MEDIO '{concepto}' connected to MACRO '{mejor_macro.text[:40]}'")
 
             self.graph.rebuild_indices()
             self.ultima_consolidacion = datetime.now()

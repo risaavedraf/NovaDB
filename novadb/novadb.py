@@ -323,6 +323,18 @@ Fragmentos:
             umbral_consolidacion=self.umbral_padre
         )
 
+    def consolidar_proponer(self, umbral: Optional[float] = None) -> Dict[str, Any]:
+        """FASE 1: Devuelve propuestas de agrupación sin crear nodos."""
+        return self.consolidator.proponer(umbral)
+
+    def consolidar_ejecutar(self, grupos: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """FASE 2: Ejecuta las agrupaciones propuestas con los nombres dados."""
+        resultado = self.consolidator.ejecutar_grupos(grupos)
+        if resultado.get("grupos_creados", 0) > 0:
+            self._trigger_autosave()
+        return resultado
+
+
     def export_md(self, path: str) -> None:
         exporter.export_to_markdown(self.graph, path)
 
@@ -371,7 +383,7 @@ Fragmentos:
             "balance_ratio": round(balance_ratio, 2),
             "medio_sobrecargados": medio_sobrecargados,
             "medio_vacios": medio_vacios,
-            "rebalanceo_recomendado": bool(balance_ratio < 0.70)
+            "rebalanceo_recomendado": balance_ratio < 0.70
         }
 
     def stats(self) -> Dict[str, Any]:
@@ -430,28 +442,28 @@ Fragmentos:
             ultimo_rebalanceo = self.rebalancer.ultimo_rebalanceo.isoformat()
         
         return {
-            "total_nodos": int(total_nodos),
+            "total_nodos": total_nodos,
             "por_tipo": {
-                "MACRO": int(self.graph.count("MACRO")),
-                "MEDIO": int(n_medios),
-                "MEMORIA": int(n_memorias)
+                "MACRO": self.graph.count("MACRO"),
+                "MEDIO": n_medios,
+                "MEMORIA": n_memorias
             },
-            "nodos_huerfanos": int(nodos_huerfanos),
-            "conexiones_totales": int(conexiones_totales),
-            "promedio_vecinos": float(promedio_vecinos),
+            "nodos_huerfanos": nodos_huerfanos,
+            "conexiones_totales": conexiones_totales,
+            "promedio_vecinos": promedio_vecinos,
             "nodo_mas_accedido": nodo_mas_accedido_data,
             "ultima_consolidacion": ultima_consolidacion,
             "ultimo_rebalanceo": ultimo_rebalanceo,
-            "tamano_disco_mb": float(tamano_disco_mb),
-            "threshold_actual": float(balance_metrics["threshold_actual"]),
-            "grupo_ideal": int(balance_metrics["grupo_ideal"]),
-            "balance_ratio": float(balance_metrics["balance_ratio"]),
-            "medio_sobrecargados": int(balance_metrics["medio_sobrecargados"]),
-            "medio_vacios": int(balance_metrics["medio_vacios"]),
-            "rebalanceo_recomendado": bool(balance_metrics["rebalanceo_recomendado"]),
-            "decay_rate": float(self.decay_rate),
-            "relevancia_weight": float(self.relevancia_weight),
-            "nodos_muy_relevantes": int(nodos_muy_relevantes),
-            "nodos_desatendidos": int(nodos_desatendidos),
-            "relevancia_promedio": float(round(relevancia_stats["promedio"], 4))
+            "tamano_disco_mb": tamano_disco_mb,
+            "threshold_actual": balance_metrics["threshold_actual"],
+            "grupo_ideal": balance_metrics["grupo_ideal"],
+            "balance_ratio": balance_metrics["balance_ratio"],
+            "medio_sobrecargados": balance_metrics["medio_sobrecargados"],
+            "medio_vacios": balance_metrics["medio_vacios"],
+            "rebalanceo_recomendado": balance_metrics["rebalanceo_recomendado"],
+            "decay_rate": self.decay_rate,
+            "relevancia_weight": self.relevancia_weight,
+            "nodos_muy_relevantes": nodos_muy_relevantes,
+            "nodos_desatendidos": nodos_desatendidos,
+            "relevancia_promedio": round(relevancia_stats["promedio"], 4)
         }
