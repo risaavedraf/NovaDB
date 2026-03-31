@@ -62,6 +62,16 @@ contexto.register(mcp)
 sistema.register(mcp)
 admin.register(mcp)
 
+# PRELOAD: Initialize NovaDB at startup so the embedding model is ready
+# before the first tool call. This avoids timeout on first request.
+logger.info("Preloading NovaDB engine (embedding model)...")
+try:
+    db = memoria.get_db()
+    embedder_type = db.embedder.__class__.__name__
+    logger.info(f"NovaDB engine preloaded successfully - Embedder: {embedder_type}")
+except Exception as e:
+    logger.warning("Failed to preload NovaDB: %s", e)
+
 def main():
     """Entry point for the MCP server."""
     # Los logs ya están configurados al inicio del archivo a file

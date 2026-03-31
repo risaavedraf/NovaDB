@@ -29,7 +29,7 @@ async def verify_api_key(x_api_key: str = Header(None)):
 # Levantamos la base de datos oficial (o la de E2E si no hemos inyectado nada)
 db_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'db', 'nova_production.msgpack'))
 if not os.path.exists(db_path):
-    print(f"⚠️ Base prod no encontrada: {db_path}. Fallback a BD vacia o e2e")
+    print(f"[WARNING] Base prod no encontrada: {db_path}. Fallback a BD vacia o e2e")
     db_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'e2e_test_db.msgpack'))
 
 db = NovaDB(path=db_path, autosave=False) # Lectura pura para el visor web
