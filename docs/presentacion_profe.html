@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NovaDB — Motor de Memoria Semántica para Agentes de IA</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #0f1117;
+      color: #e2e8f0;
+    }
+
+    .slide {
+      width: 100%;
+      min-height: 100vh;
+      padding: 60px 80px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      border-bottom: 1px solid #1e2d40;
+      page-break-after: always;
+    }
+
+    /* ── Paleta ── */
+    :root {
+      --teal: #0d9488;
+      --teal2: #14b8a6;
+      --mint: #5eead4;
+      --dark: #0f1117;
+      --card: #161d27;
+      --border: #1e2d40;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --white: #ffffff;
+    }
+
+    /* ── Slide 1 — Portada ── */
+    .slide-cover {
+      background: linear-gradient(135deg, #0d1520 0%, #0f2030 50%, #0d1520 100%);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .slide-cover::before {
+      content: '';
+      position: absolute;
+      top: -100px;
+      right: -100px;
+      width: 400px;
+      height: 400px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(13, 148, 136, 0.15) 0%, transparent 70%);
+    }
+
+    .cover-tag {
+      display: inline-block;
+      background: rgba(13, 148, 136, 0.2);
+      border: 1px solid var(--teal);
+      color: var(--teal2);
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 13px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+    }
+
+    .cover-title {
+      font-size: 64px;
+      font-weight: 800;
+      line-height: 1.1;
+      margin-bottom: 8px;
+    }
+
+    .cover-title span {
+      color: var(--teal2);
+    }
+
+    .cover-subtitle {
+      font-size: 22px;
+      color: var(--muted);
+      margin-bottom: 48px;
+    }
+
+    .cover-meta {
+      display: flex;
+      gap: 40px;
+    }
+
+    .cover-meta-item {
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .cover-meta-item strong {
+      color: var(--text);
+      display: block;
+      font-size: 16px;
+    }
+
+    /* ── Slide headers ── */
+    .slide-num {
+      font-size: 12px;
+      color: var(--teal);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    .slide-title {
+      font-size: 40px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      line-height: 1.2;
+    }
+
+    .slide-title span {
+      color: var(--teal2);
+    }
+
+    .slide-desc {
+      font-size: 16px;
+      color: var(--muted);
+      margin-bottom: 48px;
+      max-width: 600px;
+    }
+
+    /* ── Cards ── */
+    .cards {
+      display: grid;
+      gap: 20px;
+    }
+
+    .cards-3 {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .cards-2 {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .cards-4 {
+      grid-template-columns: repeat(4, 1fr);
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 28px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 3px;
+      height: 100%;
+      background: var(--teal);
+    }
+
+    .card-icon {
+      font-size: 28px;
+      margin-bottom: 16px;
+    }
+
+    .card-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: var(--white);
+    }
+
+    .card-desc {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .card-tag {
+      display: inline-block;
+      background: rgba(13, 148, 136, 0.15);
+      color: var(--teal2);
+      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 10px;
+      margin-top: 12px;
+    }
+
+    /* ── Problem slide ── */
+    .problem-box {
+      background: rgba(239, 68, 68, 0.08);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      border-radius: 12px;
+      padding: 32px;
+      margin-bottom: 32px;
+    }
+
+    .problem-box h3 {
+      color: #f87171;
+      font-size: 20px;
+      margin-bottom: 12px;
+    }
+
+    .problem-box p {
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.7;
+    }
+
+    /* ── Comparison table ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    th {
+      background: rgba(13, 148, 136, 0.15);
+      color: var(--teal2);
+      padding: 14px 18px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 13px;
+      letter-spacing: 0.5px;
+    }
+
+    td {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      color: var(--muted);
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    td:first-child {
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    .check {
+      color: var(--teal2);
+      font-weight: 700;
+    }
+
+    .cross {
+      color: #f87171;
+    }
+
+    .warn {
+      color: #fbbf24;
+    }
+
+    .highlight-row td {
+      background: rgba(13, 148, 136, 0.08);
+      color: var(--text);
+    }
+
+    .highlight-row td:first-child {
+      color: var(--teal2);
+      font-weight: 700;
+    }
+
+    /* ── Flow diagram ── */
+    .flow {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin: 32px 0;
+    }
+
+    .flow-step {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 20px;
+      text-align: center;
+      flex: 1;
+      min-width: 140px;
+    }
+
+    .flow-step .icon {
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+
+    .flow-step .label {
+      font-size: 13px;
+      color: var(--white);
+      font-weight: 600;
+    }
+
+    .flow-step .sub {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .flow-arrow {
+      color: var(--teal);
+      font-size: 20px;
+    }
+
+    /* ── Big stat ── */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+      margin: 32px 0;
+    }
+
+    .stat {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 28px;
+      text-align: center;
+    }
+
+    .stat-num {
+      font-size: 48px;
+      font-weight: 800;
+      color: var(--teal2);
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+
+    .stat-label {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    /* ── Two col ── */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+      align-items: start;
+    }
+
+    /* ── Architecture diagram ── */
+    .arch-layer {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px 28px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .arch-layer .layer-icon {
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+
+    .arch-layer .layer-name {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--white);
+    }
+
+    .arch-layer .layer-detail {
+      font-size: 12px;
+      color: var(--muted);
+      margin-left: auto;
+    }
+
+    .arch-connector {
+      text-align: center;
+      color: var(--teal);
+      font-size: 12px;
+      padding: 4px 0;
+      letter-spacing: 1px;
+    }
+
+    .arch-highlight {
+      border-color: var(--teal);
+      background: rgba(13, 148, 136, 0.08);
+    }
+
+    /* ── Ask slide ── */
+    .ask-item {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+      padding: 24px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin-bottom: 16px;
+    }
+
+    .ask-num {
+      background: var(--teal);
+      color: var(--dark);
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .ask-content h3 {
+      font-size: 17px;
+      color: var(--white);
+      margin-bottom: 6px;
+    }
+
+    .ask-content p {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    /* ── Final slide ── */
+    .slide-final {
+      background: linear-gradient(135deg, #0a1520 0%, #0d1e2e 100%);
+      text-align: center;
+      align-items: center;
+    }
+
+    .final-logo {
+      font-size: 56px;
+      font-weight: 900;
+      color: var(--teal2);
+      margin-bottom: 16px;
+    }
+
+    .final-sub {
+      font-size: 20px;
+      color: var(--muted);
+      margin-bottom: 32px;
+    }
+
+    .final-stats {
+      display: flex;
+      gap: 32px;
+      justify-content: center;
+      margin-bottom: 40px;
+      flex-wrap: wrap;
+    }
+
+    .final-stat-item {
+      text-align: center;
+    }
+
+    .final-stat-item .num {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--teal2);
+    }
+
+    .final-stat-item .lbl {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .final-tag {
+      background: rgba(13, 148, 136, 0.15);
+      border: 1px solid var(--teal);
+      color: var(--teal2);
+      padding: 10px 28px;
+      border-radius: 24px;
+      font-size: 14px;
+    }
+
+    /* ── Scope box ── */
+    .scope-box {
+      background: rgba(13, 148, 136, 0.06);
+      border: 1px solid rgba(13, 148, 136, 0.25);
+      border-radius: 12px;
+      padding: 24px 32px;
+      margin-top: 24px;
+    }
+
+    .scope-box h4 {
+      color: var(--teal2);
+      font-size: 15px;
+      margin-bottom: 8px;
+    }
+
+    .scope-box p {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    @media print {
+      .slide {
+        page-break-after: always;
+        min-height: 100vh;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- SLIDE 1 — Portada -->
+  <div class="slide slide-cover">
+    <div class="cover-tag">Propuesta de Proyecto · Abril 2026</div>
+    <div class="cover-title">Nova<span>DB</span></div>
+    <div class="cover-subtitle">Motor de Memoria Semántica para Agentes de IA</div>
+    <div class="cover-meta">
+      <div class="cover-meta-item">
+        <strong>Estudiante</strong>
+        r1cky
+      </div>
+      <div class="cover-meta-item">
+        <strong>Carrera</strong>
+        Ingeniería en Informática — IA
+      </div>
+      <div class="cover-meta-item">
+        <strong>Estado</strong>
+        Beta funcional con integración MCP
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 2 — El Problema -->
+  <div class="slide">
+    <div class="slide-num">01 — El Problema</div>
+    <div class="slide-title">Los agentes de IA <span>no tienen memoria real</span></div>
+    <div class="slide-desc">Cada conversación empieza desde cero. Para proyectos largos y sistemas complejos, esto es un
+      bloqueo crítico.</div>
+
+    <div class="problem-box">
+      <h3>⚠️ El problema actual</h3>
+      <p>Las soluciones existentes comprimen el historial en resúmenes que pierden detalle con el tiempo, o guardan
+        hechos aislados sin entender cómo se relacionan entre sí. Los agentes recuerdan <em>qué</em> pasó — pero no
+        <em>por qué</em> ni <em>cómo se conecta</em> con el resto del conocimiento.</p>
+    </div>
+
+    <div class="cards cards-3">
+      <div class="card">
+        <div class="card-icon">📦</div>
+        <div class="card-title">BDs tradicionales</div>
+        <div class="card-desc">MongoDB, Redis — guardan datos pero no entienden semántica. No encuentran "base de datos"
+          si guardaste "MongoDB".</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔍</div>
+        <div class="card-title">BDs vectoriales</div>
+        <div class="card-desc">ChromaDB, Pinecone — buscan por significado pero todos los datos están al mismo nivel,
+          sin estructura jerárquica.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🗜️</div>
+        <div class="card-title">Sistemas de memoria</div>
+        <div class="card-desc">Mem0, Letta — comprimen el historial en resúmenes que se degradan con el tiempo al crecer
+          la memoria.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 3 — La Solución -->
+  <div class="slide">
+    <div class="slide-num">02 — La Solución</div>
+    <div class="slide-title">Un motor diseñado para <span>agentes que piensan</span></div>
+    <div class="slide-desc">Infraestructura que combina grafo jerárquico, búsqueda semántica y protocolo estándar en un
+      solo sistema.</div>
+
+    <div class="cards cards-3">
+      <div class="card">
+        <div class="card-icon">🧠</div>
+        <div class="card-title">Grafo Jerárquico</div>
+        <div class="card-desc">Tres niveles de abstracción — MACRO (categorías), MEDIO (conceptos) y MEMORIA (hechos).
+          La jerarquía se construye sola a medida que el agente acumula conocimiento.<br><br>No es una lista plana de
+          vectores: es un árbol de conocimiento que crece orgánicamente.</div>
+        <div class="card-tag">MACRO → MEDIO → MEMORIA</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔗</div>
+        <div class="card-title">Integración MCP</div>
+        <div class="card-desc">14 herramientas expuestas vía Model Context Protocol — el estándar abierto de la
+          industria. Cualquier agente compatible (Claude, Gemini, GPT) usa NovaDB como su memoria sin escribir código de
+          integración.<br><br>Plug & play real para agentes de IA.</div>
+        <div class="card-tag">14 herramientas nativas</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🎨</div>
+        <div class="card-title">MindReader</div>
+        <div class="card-desc">Visor 3D interactivo del grafo construido con Astro, React y WebGL. Backend FastAPI que
+          expone la estructura en tiempo real.<br><br>Permite inspeccionar nodos, navegar relaciones y depurar la
+          memoria del agente visualmente.</div>
+        <div class="card-tag">Astro + React + FastAPI</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 4 — Cómo funciona NovaDB -->
+  <div class="slide">
+    <div class="slide-num">03 — NovaDB en detalle</div>
+    <div class="slide-title">Los sistemas actuales guardan <span>hechos</span>.<br>NovaDB guarda
+      <span>conocimiento</span>.</div>
+
+    <div class="flow">
+      <div class="flow-step">
+        <div class="icon">💬</div>
+        <div class="label">Conversación</div>
+        <div class="sub">El agente aprende algo</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="icon">🔗</div>
+        <div class="label">Nodo creado</div>
+        <div class="sub">Con texto + vector semántico</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="icon">🕸️</div>
+        <div class="label">Conexiones automáticas</div>
+        <div class="sub">Por similitud semántica</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="icon">📊</div>
+        <div class="label">Jerarquía emerge</div>
+        <div class="sub">MACRO → MEDIO → MEMORIA</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="icon">🎯</div>
+        <div class="label">Búsqueda O(√N)</div>
+        <div class="sub">Navega el árbol, no lo recorre</div>
+      </div>
+    </div>
+
+    <div class="cards cards-3">
+      <div class="card">
+        <div class="card-title">Consolidación interactiva</div>
+        <div class="card-desc">Dos fases: el sistema <strong>propone</strong> agrupaciones de memorias similares, y el
+          agente (o humano) <strong>decide</strong> si ejecutarlas. No es una caja negra — es supervisión inteligente.
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Eficiencia de tokens</div>
+        <div class="card-desc">Inyecta solo el conocimiento relevante por query, navegando la jerarquía en lugar de
+          volcar todo el historial. Con memoria grande, la diferencia es significativa.</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Embedder intercambiable</div>
+        <div class="card-desc">Interfaz abstracta BaseEmbedder permite cambiar entre Gemini, OpenAI o modelos locales
+          con una línea de configuración. Sin vendor lock-in.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 5 — Comparación -->
+  <div class="slide">
+    <div class="slide-num">04 — Posicionamiento</div>
+    <div class="slide-title">NovaDB en el <span>mercado actual</span></div>
+    <div class="slide-desc">Comparación honesta con las principales soluciones de memoria para agentes de IA.</div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Característica</th>
+          <th>Mem0</th>
+          <th>Letta</th>
+          <th>Cognee</th>
+          <th>NovaDB</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Organización del conocimiento</td>
+          <td class="cross">Plana (key-value)</td>
+          <td class="warn">Bloques de contexto</td>
+          <td class="check">Grafo de conocimiento</td>
+          <td class="check">Jerarquía 3 niveles</td>
+        </tr>
+        <tr>
+          <td>Búsqueda semántica</td>
+          <td class="check">✓ lineal</td>
+          <td class="check">✓ lineal</td>
+          <td class="check">✓ lineal</td>
+          <td class="check">✓ jerárquica O(√N)</td>
+        </tr>
+        <tr>
+          <td>Consolidación</td>
+          <td class="cross">✗ no existe</td>
+          <td class="cross">✗ no existe</td>
+          <td class="warn">⚠ automática</td>
+          <td class="check">✓ 2 fases (supervisada)</td>
+        </tr>
+        <tr>
+          <td>Integración MCP</td>
+          <td class="cross">✗ SDK propio</td>
+          <td class="warn">⚠ REST API</td>
+          <td class="warn">⚠ REST API</td>
+          <td class="check">✓ nativo (14 tools)</td>
+        </tr>
+        <tr>
+          <td>Auditabilidad</td>
+          <td class="cross">✗ sin trail</td>
+          <td class="cross">✗ sin trail</td>
+          <td class="cross">✗ sin trail</td>
+          <td class="check">✓ completa</td>
+        </tr>
+        <tr>
+          <td>Concurrencia</td>
+          <td class="check">✓ cloud</td>
+          <td class="check">✓ server</td>
+          <td class="check">✓ server</td>
+          <td class="warn">⚠ single-tenant V1</td>
+        </tr>
+        <tr>
+          <td>Infraestructura mínima</td>
+          <td class="warn">⚠ API key + cloud</td>
+          <td class="cross">✗ PostgreSQL + server</td>
+          <td class="cross">✗ Neo4j + infra pesada</td>
+          <td class="check">✓ numpy + 1 archivo</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="scope-box">
+      <h4>📌 Alcance V1.0</h4>
+      <p>NovaDB V1.0 es single-tenant e in-memory por decisión de scope. El plan de escalamiento contempla tiering
+        hot/cold con memory mapping y soporte multi-tenant en V2. La limitación está documentada y es una decisión de
+        ingeniería, no un fallo de diseño.</p>
+    </div>
+  </div>
+
+  <!-- SLIDE 6 — Arquitectura Técnica (reemplaza Modelo de Negocio) -->
+  <div class="slide">
+    <div class="slide-num">05 — Arquitectura</div>
+    <div class="slide-title">Stack técnico <span>de punta a punta</span></div>
+    <div class="slide-desc">Cada capa es independiente y puede evolucionar sin afectar las demás.</div>
+
+    <div class="two-col">
+      <div>
+        <div class="arch-layer">
+          <div class="layer-icon">🤖</div>
+          <div>
+            <div class="layer-name">Agente LLM</div>
+          </div>
+          <div class="layer-detail">Claude · Gemini · GPT · Custom</div>
+        </div>
+        <div class="arch-connector">▼ MCP (Model Context Protocol)</div>
+
+        <div class="arch-layer arch-highlight">
+          <div class="layer-icon">🔌</div>
+          <div>
+            <div class="layer-name">NovaDB MCP Server</div>
+          </div>
+          <div class="layer-detail">14 herramientas · stdio</div>
+        </div>
+        <div class="arch-connector">▼ Python API</div>
+
+        <div class="arch-layer arch-highlight">
+          <div class="layer-icon">🧠</div>
+          <div>
+            <div class="layer-name">NovaDB Core</div>
+          </div>
+          <div class="layer-detail">Grafo · Search · Consolidator · Rebalancer</div>
+        </div>
+        <div class="arch-connector">▼ MessagePack / JSON</div>
+
+        <div class="arch-layer">
+          <div class="layer-icon">💾</div>
+          <div>
+            <div class="layer-name">Persistencia</div>
+          </div>
+          <div class="layer-detail">.msgpack (prod) · .json (debug)</div>
+        </div>
+        <div class="arch-connector">▼ REST API (FastAPI)</div>
+
+        <div class="arch-layer">
+          <div class="layer-icon">👁️</div>
+          <div>
+            <div class="layer-name">MindReader</div>
+          </div>
+          <div class="layer-detail">Astro + React + WebGL</div>
+        </div>
+      </div>
+
+      <div>
+        <div class="cards" style="gap:16px">
+          <div class="card">
+            <div class="card-title">Desacoplamiento total</div>
+            <div class="card-desc">El Core no sabe que MCP existe. El MCP Server no sabe que MindReader existe. Cada
+              capa se comunica por interfaces limpias — si una cambia, las demás no se enteran.</div>
+          </div>
+          <div class="card">
+            <div class="card-title">Embedder como interfaz</div>
+            <div class="card-desc">BaseEmbedder define el contrato. Hoy usa Gemini API; mañana puede usar OpenAI,
+              HuggingFace local o un modelo propio (AlmaEmbed) sin tocar ni una línea del Core.</div>
+          </div>
+          <div class="card">
+            <div class="card-title">Validado con tests</div>
+            <div class="card-desc">15 archivos de tests cubriendo core, búsqueda, consolidación, persistencia, edge
+              cases, decay, similitud, integración, rebalanceo y servidor MCP.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 7 — Estado actual -->
+  <div class="slide">
+    <div class="slide-num">06 — Estado Actual</div>
+    <div class="slide-title">Lo que ya está <span>construido</span></div>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-num">93</div>
+        <div class="stat-label">Nodos en el grafo<br><span style="color:#5eead4">de producción</span></div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">934</div>
+        <div class="stat-label">Conexiones<br><span style="color:#5eead4">semánticas</span></div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">14</div>
+        <div class="stat-label">Herramientas<br><span style="color:#5eead4">MCP nativas</span></div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">15</div>
+        <div class="stat-label">Archivos de<br><span style="color:#5eead4">tests</span></div>
+      </div>
+    </div>
+
+    <div class="cards cards-3" style="margin-bottom:32px">
+      <div class="card">
+        <div class="card-icon">✅</div>
+        <div class="card-title">NovaDB Core</div>
+        <div class="card-desc">Motor de grafo semántico jerárquico. Inserción con vectorización automática, búsqueda
+          O(√N), consolidación en 2 fases, autobalanceo dinámico y persistencia MessagePack.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">✅</div>
+        <div class="card-title">Servidor MCP</div>
+        <div class="card-desc">14 herramientas integradas: memorizar, recordar, obtener, actualizar, olvidar, conectar,
+          reflejar, analizar, consolidar (proponer + ejecutar), rebalancear, guardar, cargar, exportar.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">✅</div>
+        <div class="card-title">MindReader</div>
+        <div class="card-desc">Visualizador 3D del grafo en Astro + React con backend FastAPI. Inspección de nodos,
+          navegación de relaciones y rendering WebGL en tiempo real.</div>
+      </div>
+    </div>
+
+    <div class="cards cards-2">
+      <div class="card">
+        <div class="card-icon">✅</div>
+        <div class="card-title">Documentación y validación</div>
+        <div class="card-desc">PRD y SDD completos. Análisis adversarial (red-teaming) con Némesis + Defensa. Demo
+          script de 5 minutos. 15 archivos de tests unitarios e integración.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔬</div>
+        <div class="card-title">En exploración — AlmaEmbed</div>
+        <div class="card-desc">Investigación de arquitectura de red neuronal propia para embeddings locales. Objetivo:
+          eliminar dependencia de APIs externas y operar completamente offline.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 8 — Lo que busco -->
+  <div class="slide">
+    <div class="slide-num">07 — Lo que Busco</div>
+    <div class="slide-title">Asesoramiento en <span>tres áreas</span></div>
+    <div class="slide-desc">El objetivo de esta reunión es entender qué pasos concretos seguir para formalizar el
+      proyecto.</div>
+
+    <div class="ask-item">
+      <div class="ask-num">1</div>
+      <div class="ask-content">
+        <h3>Validación técnica y académica</h3>
+        <p>¿El enfoque jerárquico para memoria semántica y la complejidad O(√N) tienen bases teóricas sólidas? ¿Qué tan
+          innovador es el uso de consolidación interactiva en 2 fases desde una perspectiva de ingeniería?</p>
+      </div>
+    </div>
+
+    <div class="ask-item">
+      <div class="ask-num">2</div>
+      <div class="ask-content">
+        <h3>Evaluación de potencial CITT</h3>
+        <p>Basado en el estado actual del prototipo, ¿considera que NovaDB tiene el perfil para postular al CITT? De ser
+          así, ¿qué aspectos clave cree que deberían fortalecerse para una postulación exitosa?</p>
+      </div>
+    </div>
+
+    <div class="ask-item">
+      <div class="ask-num">3</div>
+      <div class="ask-content">
+        <h3>Orientación estratégica</h3>
+        <p>¿Cuál considera que es el mejor camino para un proyecto con estas capacidades? ¿Foco 100% Open Source,
+          búsqueda de incubadoras o apoyo institucional para desarrollo D+I?</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 9 — Cierre -->
+  <div class="slide slide-final">
+    <div class="final-logo">Nova<span style="color:#0d9488">DB</span></div>
+    <div class="final-sub">Motor de memoria semántica para agentes de IA<br>que necesitan recordar, conectar y razonar.
+    </div>
+    <div class="final-stats">
+      <div class="final-stat-item">
+        <div class="num">93</div>
+        <div class="lbl">nodos</div>
+      </div>
+      <div class="final-stat-item">
+        <div class="num">934</div>
+        <div class="lbl">conexiones</div>
+      </div>
+      <div class="final-stat-item">
+        <div class="num">14</div>
+        <div class="lbl">herramientas MCP</div>
+      </div>
+      <div class="final-stat-item">
+        <div class="num">15</div>
+        <div class="lbl">tests</div>
+      </div>
+      <div class="final-stat-item">
+        <div class="num">O(√N)</div>
+        <div class="lbl">búsqueda</div>
+      </div>
+    </div>
+    <div class="final-tag">Documentación técnica completa y código fuente disponibles</div>
+  </div>
+
+</body>
+
+</html>

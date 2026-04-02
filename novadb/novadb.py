@@ -315,13 +315,18 @@ Fragmentos:
 
         self._validate_embedder_dims(saved_dims)
 
-        # Re-instantiate consolidator to drop the old graph reference
+        # Re-instantiate ALL graph-dependent components to point at the new graph.
+        # This is critical when load() is called AFTER __init__ (e.g. from get_db() in MCP),
+        # because self.searcher and self.rebalancer would otherwise keep referencing
+        # the old (empty) graph that was built during __init__.
         from novadb.core.consolidator import Consolidator
         self.consolidator = Consolidator(
             graph=self.graph,
             embedder=self.embedder,
             umbral_consolidacion=self.umbral_padre
         )
+        self.searcher = HierarchicalSearch(self.graph)
+        self.rebalancer = Rebalancer(self.graph)
 
     def consolidar_proponer(self, umbral: Optional[float] = None) -> Dict[str, Any]:
         """FASE 1: Devuelve propuestas de agrupación sin crear nodos."""
