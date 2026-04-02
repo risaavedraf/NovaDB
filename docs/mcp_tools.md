@@ -1,107 +1,115 @@
-# MCP Tools Reference
+# Referencia de Herramientas MCP
 
-NovaDB exposes 12 tools via the Model Context Protocol (MCP). Any MCP-compatible agent can use them.
+NovaDB expone 14s herramientas a través del Model Context Protocol (MCP). Cualquier agente compatible con MCP puede utilizarlas para dotarse de memoria a largo plazo.
 
-## Module `memoria` — Base Operations
+## Módulo `memoria` — Operaciones Base
 
 ### `memorizar`
-Store text as a node with semantic vector embedding.
+Almacena texto como un nodo generando su embedding vectorial semántico.
 
-| Parameter | Type | Required | Description |
+| Parámetro | Tipo | Requerido | Descripción |
 |-----------|------|----------|-------------|
-| `texto` | string | Yes | The memory content |
-| `tipo` | string | No | `MACRO`, `MEDIO`, or `MEMORIA` (default: `MEMORIA`) |
-| `metadata` | dict | No | Extra key-value data |
+| `texto` | string | Sí | El contenido de la memoria. |
+| `tipo` | string | No | `MACRO`, `MEDIO` o `MEMORIA` (por defecto: `MEMORIA`). |
+| `metadata` | dict | No | Datos extra en formato clave-valor. |
 
 ### `recordar`
-Search memories by semantic meaning, returns most similar nodes.
+Busca memorias por significado semántico (similitud matemática), retornando los nodos más similares a la consulta.
 
-| Parameter | Type | Required | Description |
+| Parámetro | Tipo | Requerido | Descripción |
 |-----------|------|----------|-------------|
-| `consulta` | string | Yes | What you're looking for |
-| `cantidad` | int | No | Max results (default: 5) |
+| `consulta` | string | Sí | El concepto o pregunta que estás buscando. |
+| `cantidad` | int | No | Número máximo de resultados (por defecto: 5). |
 
 ### `obtener`
-Retrieve a specific memory by exact ID.
+Recupera un nodo de memoria específico por su ID exacto.
 
-| Parameter | Type | Required | Description |
+| Parámetro | Tipo | Requerido | Descripción |
 |-----------|------|----------|-------------|
-| `node_id` | string | Yes | Node ID to retrieve |
+| `node_id` | string | Sí | El ID del nodo a recuperar. |
 
 ### `olvidar`
-Surgically delete a node, returns orphaned node IDs.
+Borrado quirúrgico de un nodo. Retorna los IDs de los nodos hijos que quedaron "huérfanos".
 
-| Parameter | Type | Required | Description |
+| Parámetro | Tipo | Requerido | Descripción |
 |-----------|------|----------|-------------|
-| `node_id` | string | Yes | Node ID to delete |
+| `node_id` | string | Sí | ID del nodo a borrar definitivamente. |
 
-## Module `contexto` — Navigation
+## Módulo `contexto` — Navegación del Grafo
 
 ### `reflejar`
-Get the neighborhood around a node: parents, children, and neighbors.
+Obtiene el "vecindario" alrededor de un nodo: sus padres (MACROS/MEDIOS), sus hijos (MEMORIAS) y sus vecinos horizontales.
 
-| Parameter | Type | Required | Description |
+| Parámetro | Tipo | Requerido | Descripción |
 |-----------|------|----------|-------------|
-| `node_id` | string | Yes | Node ID to reflect on |
-| `profundidad` | int | No | How many levels up/down (default: 1) |
+| `node_id` | string | Sí | ID del nodo central para el reflejo. |
+| `profundidad` | int | No | Niveles hacia arriba/abajo (por defecto: 1). |
 
 ### `actualizar`
-Edit an existing node's content or metadata.
+Modifica el contenido o la metadata de un nodo existente. Si se cambia el texto, se regenera el embedding.
 
-| Parameter | Type | Required | Description |
+| Parámetro | Tipo | Requerido | Descripción |
 |-----------|------|----------|-------------|
-| `node_id` | string | Yes | Node ID to update |
-| `texto` | string | No | New text content |
-| `metadata` | dict | No | Metadata to merge |
+| `node_id` | string | Sí | ID del nodo a editar. |
+| `texto` | string | No | Nuevo contenido de texto. |
+| `metadata` | dict | No | Metadata a fusionar con la existente. |
 
 ### `conectar`
-Create an explicit connection between two nodes.
+Crea una conexión explícita manual entre dos nodos, forzando una relación gravitacional que la matemática podría no haber captado.
 
-| Parameter | Type | Required | Description |
+| Parámetro | Tipo | Requerido | Descripción |
 |-----------|------|----------|-------------|
-| `origen_id` | string | Yes | Source node ID |
-| `destino_id` | string | Yes | Target node ID |
-| `tipo_conexion` | string | No | Relationship type |
-| `peso` | float | No | Connection weight |
+| `origen_id` | string | Sí | ID del nodo origen. |
+| `destino_id` | string | Sí | ID del nodo destino. |
+| `tipo_conexion` | string | No | Tipo de relación (ej. "depende_de"). |
+| `peso` | float | No | Peso gravitacional de la conexión. |
 
-## Module `sistema` — Maintenance
+## Módulo `sistema` — Mantenimiento y Agentic Clustering
 
 ### `analizar`
-Full graph statistics and health metrics.
+Obtiene estadísticas globales y métricas de salud del inmenso grafo de memoria.
 
-*No parameters.*
+*Sin parámetros.*
 
-### `consolidar`
-Group orphan nodes into MEDIO categories.
+### `consolidar_proponer`
+**Fase 1:** Analiza vectores y propone agrupaciones lógicas de nodos "huérfanos" que sean muy similares, sin afectar la base de datos real.
 
-| Parameter | Type | Required | Description |
+| Parámetro | Tipo | Requerido | Descripción |
 |-----------|------|----------|-------------|
-| `umbral` | float | No | Similarity threshold (default: 0.70) |
+| `umbral` | float | No | Umbral mínimo de similitud coseno (por defecto: 0.82). |
+
+### `consolidar_ejecutar`
+**Fase 2:** Ejecuta la creación del nodo MEDIO para organizar un grupo de memorias propuesto. El nodo se auto-conecta a su raíz MACRO más adecuada.
+
+| Parámetro | Tipo | Requerido | Descripción |
+|-----------|------|----------|-------------|
+| `nodo_ids` | list | Sí | Lista de IDs (strings) de los nodos MEMORIA a fusionar en el nuevo grupo. |
+| `nombre` | string | Sí | Nombre representativo humano que se le dará al nodo MEDIO organizado. |
 
 ### `rebalancear`
-Reorganize the graph hierarchy.
+Reorganiza forzosamente la jerarquía del grafo.
 
-*No parameters.*
+*Sin parámetros.*
 
-## Module `admin` — Persistence
+## Módulo `admin` — Persistencia
 
 ### `guardar`
-Persist graph to msgpack on disk.
+Fuerza un guardado o snapshot del grafo en formato MessagePack o JSON al disco.
 
-| Parameter | Type | Required | Description |
+| Parámetro | Tipo | Requerido | Descripción |
 |-----------|------|----------|-------------|
-| `ruta` | string | No | File path (default: configured path) |
+| `ruta` | string | No | Ruta del archivo a guardar (por defecto usa la ruta configurada en el servidor). |
 
 ### `cargar`
-Load graph from disk.
+Carga un grafo de memoria específico desde el disco, destruyendo el entorno en memoria actual.
 
-| Parameter | Type | Required | Description |
+| Parámetro | Tipo | Requerido | Descripción |
 |-----------|------|----------|-------------|
-| `ruta` | string | No | File path to load (default: configured path) |
+| `ruta` | string | No | Ruta del archivo a cargar. |
 
 ### `exportar`
-Export snapshot to human-readable Markdown.
+Exporta una instantánea (snapshot) de toda tu "mente" a un documento Markdown legible para humanos.
 
-| Parameter | Type | Required | Description |
+| Parámetro | Tipo | Requerido | Descripción |
 |-----------|------|----------|-------------|
-| `ruta` | string | Yes | Output file path |
+| `ruta` | string | Sí | Ruta del archivo `.md` de salida. |

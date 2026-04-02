@@ -1,138 +1,145 @@
 # NovaDB 🧠
 
-**Hierarchical Semantic Memory Engine for AI Agents.**
+**Motor de Memoria Semántica Jerárquica para Agentes de IA.**
 
-Combines vector search, automatic hierarchy, and simple persistence — in a single monorepo. Connect any AI agent via MCP in minutes.
+NovaDB combina búsqueda vectorial, jerarquía automática y persistencia simple en un único monorepo. Conecta cualquier agente de IA a través de MCP (Model Context Protocol) en cuestión de minutos y dótalo de una memoria estructurada a largo plazo.
 
-## Quick Start
+## Inicio Rápido
 
-### Option A — `uv` (recommended, no venv management needed)
+### Opción A — `uv` (Recomendado, no requiere manejo manual de venv)
 
 ```bash
-# Install uv once (Linux / WSL / macOS)
+# Instala uv una vez (Linux / WSL / macOS / Windows)
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
-# Clone & run
+# Clona y ejecuta
 git clone https://github.com/risaavedraf/NovaDB.git
-cd NovaDB
+cd novadb
 
-uv sync                   # installs everything automatically
-cp .env.example .env      # add your GEMINI_API_KEY (optional)
+uv sync                   # Instala todo automáticamente
+cp .env.example .env      # Añade tu GEMINI_API_KEY (opcional)
 
-# Verify
+# Verificar instalación
 uv run python -c "from novadb.novadb import NovaDB; print('NovaDB OK')"
 ```
 
-### Option B — `pip` + venv (traditional)
+### Opción B — `pip` + venv (Tradicional)
 
 ```bash
 git clone https://github.com/risaavedraf/NovaDB.git
-cd NovaDB
+cd novadb
 
 python -m venv venv
 source venv/bin/activate        # Linux / WSL / macOS
-# or: .\venv\Scripts\activate   # Windows
+# o en Windows: .\venv\Scripts\activate
 
 pip install -e ".[all]"
 cp .env.example .env
 ```
 
-## Connecting to an AI Agent (MCP)
+## Conectando a un Agente de IA (MCP)
 
-The server automatically loads `.env` from the monorepo root — no need to duplicate keys in the agent config.
+NovaDB soporta los formatos principales de configuración de MCP. El servidor carga automáticamente el archivo `.env` desde la raíz del monorepo, por lo que no necesitas duplicar tus claves API en la configuración del agente.
 
-**Step 1:** Fill in your `.env`:
-```bash
-cp .env.example .env
-# Set GEMINI_API_KEY and NOVADB_PATH inside
+### 1. Formato OpenCode.ai (Basado en Arreglos)
+OpenCode utiliza un esquema único. Requiere `"type": "local"` y un **arreglo (array)** para el comando. No utiliza el campo `args`.
+
+**Edita tu `opencode.json`:**
+```json
+{
+  "mcp": {
+    "novadb": {
+      "type": "local",
+      "command": [
+        "uv", 
+        "run", 
+        "--project", "/ruta/absoluta/a/NovaDB", 
+        "-m", "novadb_mcp.server"
+      ]
+    }
+  }
+}
 ```
 
-**Step 2:** Add to your agent's MCP config (opencode, Antigravity, Claude Desktop, etc.):
+### 2. Formato Estándar MCP (Claude Desktop, Antigravity, etc.)
+Utilizado por la mayoría de clientes estándar. Usa `"mcpServers"`, un comando en formato string, y un arreglo `args`.
 
-**With `uv` (recommended):**
+**Edita tu `mcp_config.json` (o equivalente):**
 ```json
 {
   "mcpServers": {
     "novadb": {
       "command": "uv",
-      "args": ["run", "--project", "/path/to/novadb", "-m", "novadb_mcp.server"]
+      "args": [
+        "run", 
+        "--project", "/ruta/absoluta/a/NovaDB", 
+        "-m", "novadb_mcp.server"
+      ]
     }
   }
 }
 ```
-
-**With venv:**
-```json
-{
-  "mcpServers": {
-    "novadb": {
-      "command": "/path/to/novadb/venv/bin/python",
-      "args": ["-m", "novadb_mcp.server"]
-    }
-  }
-}
-```
-
-> **WSL tip:** run `which uv` or `which python` to get the exact path.  
-> **Windows tip:** use full absolute path to `venv\Scripts\python.exe`.
-
-## MindReader — 3D Visualization
-
-```bash
-# Terminal 1 — Backend
-cd mind-reader
-uvicorn api:app --port 8000 --reload
-
-# Terminal 2 — Frontend
-cd mind-reader/web
-npm install
-npm run dev
-# → Open http://localhost:4321
-```
-
-## Monorepo Structure
-
-| Module | Description |
-|--------|-------------|
-| [`novadb/`](novadb/) | Core — 3-layer semantic memory engine (MACRO / MEDIO / MEMORIA) |
-| [`novadb-mcp/`](novadb-mcp/) | MCP Server — 13 tools to connect any AI agent |
-| [`mind-reader/`](mind-reader/) | Frontend — Interactive Knowledge Graph visualization |
-| [`docs/`](docs/) | Docs — Architecture, MCP tools reference, demo guide |
-
-## Architecture
-
-```
-novadb/          → Core engine  (O(√N) search, automatic clustering)
-novadb-mcp/      → MCP bridge   (FastMCP → 13 standardized tools)
-mind-reader/     → Visualizer   (FastAPI + React + 3D force-graph)
-```
-
-The three modules connect: the **core** processes memory, the **MCP server** exposes tools to agents, and **MindReader** renders the live knowledge graph.
-
-## Embedder Modes
-
-| Mode | Model | Dims | Requirement |
-|------|-------|------|-------------|
-| **Gemini** (default) | `gemini-embedding-001` | 768 | `GEMINI_API_KEY` |
-| **Local** (offline) | `all-MiniLM-L6-v2` | 384 | `sentence-transformers` |
-
-The system auto-detects which mode to use. If no API key is set, it falls back to the local model automatically.
-
-> **Note:** A database built with one embedder is **not compatible** with another (different vector dimensions). The system will raise an `IncompatibleEmbedderError` with a clear message if this happens.
-
-## Documentation
-
-- [Architecture](docs/architecture.md) — Full Mermaid system diagram
-- [How It Works](docs/how_it_works.md) — Conceptual explanation of the 3 layers
-- [MCP Tools](docs/mcp_tools.md) — Reference for all 13 MCP tools
-- [Demo Script](docs/demo_script.md) — Presentation guide
-
-## Status
-
-- ✅ Core v1.1 — Temporal decay, hierarchical indices, 126 tests
-- ✅ MCP Server — 13 tools, fully documented
-- ✅ MindReader — FastAPI backend + React 3D frontend
 
 ---
 
-MIT License · Built by **r1cky**
+> **Tip para WSL:** ejecuta `which uv` o `which python` para obtener la ruta exacta.
+> **Tip para Windows:** utiliza la ruta absoluta completa hacia `venv\Scripts\python.exe` y usa barras normales `/` o dobles barras invertidas `\\`.
+
+## MindReader — Visualizador 3D
+
+MindReader te permite ver la topología de la memoria en tiempo real, observando cómo los nodos MACRO, MEDIO y MEMORIA interactúan y se agrupan.
+
+```bash
+# Terminal 1 — Backend (Provee acceso a la base de datos)
+$env:NOVADB_PATH = 'db/nova_production.msgpack' # En PowerShell (opcional)
+.\venv\Scripts\python.exe -m uvicorn mind-reader.api:app --port 8000 --reload
+
+# Terminal 2 — Frontend (Interfaz 3D Web)
+cd mind-reader/web
+npm install
+npm run dev
+# → Abre http://localhost:4321 en tu navegador
+```
+
+## Estructura del Monorepo
+
+| Módulo | Descripción |
+|--------|-------------|
+| [`novadb/`](novadb/) | Motor Core — Memoria semántica de 3 capas (MACRO / MEDIO / MEMORIA) |
+| [`novadb-mcp/`](novadb-mcp/) | Servidor MCP — Herramientas estandarizadas para conectar cualquier agente de IA |
+| [`mind-reader/`](mind-reader/) | Frontend/Backend — Visualización interactiva del Grafo de Conocimiento en 3D |
+| [`docs/`](docs/) | Documentación — Arquitectura, referencia de herramientas MCP, guía de demostración |
+
+## Arquitectura y Consolidación Agentic
+
+El sistema organiza la información en tres niveles jerárquicos:
+1. **MEMORIA:** Fragmentos de conocimiento puro ingresados al sistema.
+2. **MEDIO:** Clústeres o conceptos formados por la unión natural de múltiples Memorias.
+3. **MACRO:** El contexto global u origen fundamental (ej. un Proyecto o una Persona).
+
+**Consolidación en 2 Fases (Nuevo):**
+Para mantener un orden lógico y delegar el poder de raciocinio al Agente de IA, NovaDB utiliza un proceso orgánico:
+- **`consolidar_proponer`**: El motor analiza la distancia semántica (vectores) y sugiere, sin modificar la base de datos, agrupar memorias huérfanas muy similares (umbral > 0.82).
+- **`consolidar_ejecutar`**: El agente recibe la propuesta, decide un título descriptivo y formaliza la creación del nodo MEDIO, el cual se auto-conecta a su MACRO más cercano para mantener la integridad del árbol de memoria.
+
+## Modelos de Embedding
+
+| Modo | Modelo | Dimensiones | Requisito |
+|------|-------|------|-------------|
+| **Gemini** (por defecto) | `text-embedding-004` / `001` | 768 / 3072 | `GEMINI_API_KEY` |
+| **Local** (offline) | `all-MiniLM-L6-v2` | 384 | `sentence-transformers` |
+
+El sistema auto-detecta qué modo utilizar. Si no se configura una clave API en el `.env`, el sistema utiliza silenciosamente el modelo local.
+
+> **Nota Crítica:** Una base de datos construida con un embedder **no es compatible** con otro (debido a las diferentes dimensiones de los vectores matemáticos). El motor verificará esto automáticamente al cargar y lanzará un `IncompatibleEmbedderError` previniendo corrupciones en los datos.
+
+## Estado del Proyecto
+
+- ✅ **Core v1.2** — Clustering semántico en 2 Fases, validación de embeddings, decaimiento temporal y búsqueda O(√N).
+- ✅ **Servidor MCP** — Infraestructura de herramientas integradas y probadas bajo OpenCode y entornos nativos.
+- ✅ **MindReader** — Visor estable de grafo de fuerzas en 3D (Astro + React + FastAPI).
+
+---
+
+Licencia MIT · Creado por **r1cky** & asistido por **Alma Nova** 🌌
+

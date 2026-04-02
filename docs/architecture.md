@@ -1,25 +1,25 @@
-# Architecture — NovaDB
+# Arquitectura — NovaDB
 
-## System Overview
+## Visión General del Sistema
 
 ```mermaid
 graph TB
-    subgraph "NovaDB Monorepo"
-        subgraph "novadb — Core Engine"
-            CORE[NovaDB Engine<br/>3-layer hierarchy]
-            MEM[Memory Module<br/>Node storage]
-            STORE[Storage Layer<br/>JSON / MessagePack]
-            EMBED[Embedder Interface<br/>Gemini API]
+    subgraph "Monorepo NovaDB"
+        subgraph "novadb — Motor Core"
+            CORE[Motor NovaDB<br/>Jerarquía de 3 capas]
+            MEM[Módulo de Memoria<br/>Almacenamiento de Nodos]
+            STORE[Capa de Persistencia<br/>JSON / MessagePack]
+            EMBED[Interfaz Embedder<br/>API Gemini / Local]
             CORE --> MEM
             CORE --> STORE
             CORE --> EMBED
         end
 
-        subgraph "novadb-mcp — MCP Server"
-            MCP[FastMCP Server]
+        subgraph "novadb-mcp — Servidor MCP"
+            MCP[Servidor FastMCP]
             TMEM[memorizar / recordar / obtener]
             TCTX[reflejar / actualizar / conectar]
-            TSYS[analizar / rebalancear]
+            TSYS[analizar / consolidar / rebalancear]
             TADM[guardar / cargar / exportar]
             MCP --> TMEM
             MCP --> TCTX
@@ -27,18 +27,18 @@ graph TB
             MCP --> TADM
         end
 
-        subgraph "mind-reader — Visualization"
-            API[FastAPI Backend]
-            WEB[React + force-graph]
-            SOCK[WebSocket / Polling]
+        subgraph "mind-reader — Visualización"
+            API[Backend FastAPI]
+            WEB[Astro + React + force-graph]
+            SOCK[API REST / Polling]
             API --> WEB
             API --> SOCK
         end
     end
 
-    subgraph "External"
-        GEM[Gemini API<br/>Embeddings]
-        AGENTS[AI Agents<br/>OpenCode / Cursor / Claude]
+    subgraph "Externo"
+        GEM[API Gemini<br/>Embeddings]
+        AGENTS[Agentes IA<br/>OpenCode / Cursor / Claude]
     end
 
     CORE <--> GEM
@@ -47,53 +47,53 @@ graph TB
     TMEM --> CORE
 ```
 
-## Data Flow
+## Flujo de Datos
 
 ```mermaid
 sequenceDiagram
-    participant User
-    participant Agent as AI Agent
+    participant Usuario
+    participant Agente as Agente IA
     participant MCP as novadb-mcp
     participant DB as novadb Core
     participant Gemini
 
-    User->>Agent: "Remember that my band is Deftones"
-    Agent->>MCP: memorizar(texto, tipo)
-    MCP->>Gemini: Generate embedding
+    Usuario->>Agente: "Recuerda que mi banda favorita es Deftones"
+    Agente->>MCP: memorizar(texto, tipo)
+    MCP->>Gemini: Generar embedding
     Gemini-->>MCP: Vector [0.23, -0.41, ...]
-    MCP->>DB: Store node with vector
-    DB-->>MCP: Node created (ID: 42)
-    MCP-->>Agent: Confirmation
-    Agent-->>User: "Got it, stored in memory"
+    MCP->>DB: Almacenar nodo con vector
+    DB-->>MCP: Nodo creado (ID: 42)
+    MCP-->>Agente: Confirmación
+    Agente-->>Usuario: "Entendido, guardado en memoria"
 
-    User->>Agent: "What bands do I like?"
-    Agent->>MCP: recordar(consulta="bandas favoritas")
-    MCP->>Gemini: Embed query
-    Gemini-->>MCP: Query vector
-    MCP->>DB: Cosine similarity search
-    DB-->>MCP: Top-K results
-    MCP-->>Agent: Memories found
-    Agent-->>User: "Your favorite band is Deftones"
+    Usuario->>Agente: "¿Qué bandas me gustan?"
+    Agente->>MCP: recordar(consulta="bandas favoritas")
+    MCP->>Gemini: Vectorizar consulta
+    Gemini-->>MCP: Vector de la consulta
+    MCP->>DB: Búsqueda por similitud coseno
+    DB-->>MCP: Resultados Top-K
+    MCP-->>Agente: Memorias encontradas
+    Agente-->>Usuario: "Tu banda favorita es Deftones"
 ```
 
-## Hierarchy Model
+## Modelo Jerárquico
 
 ```mermaid
 graph LR
     M1[MACRO<br/>Arquitecturas Cloud] --> MED1[MEDIO<br/>AWS]
     M1 --> MED2[MEDIO<br/>GCP]
-    MED1 --> MEM1[MEMORIA<br/>Lambda caro para 5min]
+    MED1 --> MEM1[MEMORIA<br/>Lambda caro para procs de 5min]
     MED1 --> MEM2[MEMORIA<br/>S3 costo por GB]
     MED2 --> MEM3[MEMORIA<br/>Cloud Functions barato]
 ```
 
-## Tech Stack
+## Stack Tecnológico
 
-| Layer | Technology | Purpose |
+| Capa | Tecnología | Propósito |
 |-------|-----------|---------|
-| Core | Python, NumPy, msgpack | Semantic engine + persistence |
-| Embeddings | Gemini API | Text → vector conversion |
-| MCP | FastMCP, Python | Protocol bridge for AI agents |
-| Backend API | FastAPI | REST endpoints for visualization |
-| Frontend | React, force-graph | Interactive graph rendering |
-| Real-time | WebSocket / Polling | Live memory updates |
+| Core | Python, NumPy, msgpack | Motor semántico + persistencia binaria hiper-rápida |
+| Embeddings | API Gemini / Local | Conversión de texto → vector (768 o 384 dimensiones) |
+| MCP | FastMCP, Python | Puente de protocolo estándar para dotar de memoria a IA |
+| Backend API | FastAPI | Endpoints REST para ingestar el grafo al visualizador |
+| Frontend | Astro, React, 3D force-graph | Renderizado del grafo espacial y topológico interactivo |
+| Tiempo Real | Polling / JSON Fetch | Actualización en vivo del estado de la memoria |

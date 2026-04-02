@@ -4,7 +4,7 @@ Servidor MCP (Model Context Protocol) para NovaDB — tu motor de memoria semán
 
 ## ¿Qué es esto?
 
-NovaDB MCP convierte tu motor de memoria NovaDB en una herramienta que CUALQUIER agente de IA puede usar:
+NovaDB MCP convierte tu motor de memoria NovaDB en una herramienta que CUALQUIER agente de IA puede usar para auto-dotarse de una memoria episódica estructurada y perdurable:
 - **Antigravity**
 - **OpenCode**
 - **Cursor**
@@ -15,135 +15,114 @@ NovaDB MCP convierte tu motor de memoria NovaDB en una herramienta que CUALQUIER
 ## Instalación
 
 ```bash
-# Instalar dependencias
-pip install mcp
+# Se recomienda instalar todo desde la raíz usando uv:
+uv sync
 
-# O instalar como paquete
+# O a la forma tradicional (dentro de un venv):
+pip install mcp
 cd novadb-mcp
 pip install -e .
 ```
 
-## Configuración
+## Configuración y Variables de Entorno
 
-Variables de entorno:
+El servidor carga dinámicamente el archivo `.env` desde la raíz de tu monorepo:
 
 ```bash
-# Requerido para embeddings y consolidación
+# Requerido para embeddings (si no usas la versión Local)
 GEMINI_API_KEY=tu-api-key
 
-# Opcional
-NOVADB_PATH=./nova_production.msgpack  # Ruta del archivo de base de datos
-NOVADB_LOG_LEVEL=INFO                  # Nivel de logging (DEBUG/INFO/WARNING)
+# Opcional (Sobrescribir si es necesario)
+NOVADB_PATH=./nova_production.msgpack
+NOVADB_LOG_LEVEL=INFO
 ```
 
-## Uso
+## Uso y Configuración Estándar
 
-### Claude Desktop
-
-Agrega a `claude_desktop_config.json`:
+### OpenCode (y clientes similares basados en Array)
+Añadir a la configuración de `opencode`:
 
 ```json
 {
-  "mcpServers": {
+  "mcp": {
     "novadb": {
-      "command": "python",
-      "args": ["-m", "novadb_mcp.server"],
-      "cwd": "<YOUR_PATH>/novadb-mcp",
-      "env": {
-        "GEMINI_API_KEY": "YOUR_API_KEY_HERE",
-        "NOVADB_PATH": "<YOUR_PATH>/nova_production.msgpack"
-      }
+      "type": "local",
+      "command": [
+        "uv",
+        "run",
+        "--project", "/ruta/absoluta/al/NovaDB",
+        "-m", "novadb_mcp.server"
+      ]
     }
   }
 }
 ```
 
-### OpenCode
+### Claude Desktop
+Añadir a `claude_desktop_config.json`:
 
-Ver `examples/opencode.json` para configuración.
-
-### Línea de comandos
-
-```bash
-# Ejecutar el servidor MCP
-python -m novadb_mcp.server
+```json
+{
+  "mcpServers": {
+    "novadb": {
+      "command": "uv",
+      "args": [
+        "run",
+        "--project", "/ruta/absoluta/al/NovaDB",
+        "-m", "novadb_mcp.server"
+      ]
+    }
+  }
+}
 ```
 
-## Tools Disponibles
+## Tools Disponibles (x14)
 
-### Memoria
+### 🧠 Memoria
 
 | Tool | Descripción |
 |------|-------------|
-| `memorizar` | Guarda un recuerdo en la memoria semántica |
-| `recordar` | Busca recuerdos por significado |
-| `obtener` | Recupera un recuerdo por ID |
-| `olvidar` | Elimina un recuerdo (pendiente implementación) |
+| `memorizar` | Guarda un recuerdo fragmentado en memoria (Fase 1 del clúster natural). |
+| `recordar` | Busca recuerdos instantáneamente usando vectores y O(√N). |
+| `obtener` | Recupera el contenido exacto de un nodo con metadata desde su ID. |
+| `olvidar` | Elimina un recuerdo ("Lobotomía"), devolviendo sus hijos en forma huérfana. |
 
-### Contexto
-
-| Tool | Descripción |
-|------|-------------|
-| `reflejar` | Obtiene el contexto alrededor de un nodo |
-| `actualizar` | Modifica un recuerdo existente |
-| `conectar` | Relaciona dos memorias explícitamente |
-
-### Sistema
+### 🕸️ Contexto
 
 | Tool | Descripción |
 |------|-------------|
-| `analizar` | Estadísticas del grafo de memoria |
-| `rebalancear` | Reorganiza el grafo automáticamente |
+| `reflejar` | Obtiene el entorno mental de un nodo (padres MACRO, hijos, hermanos). |
+| `actualizar` | Modifica el texto de un recuerdo (actualizando su vector y reposición). |
+| `conectar` | Conecta manualmente 2 memorias que no superaron el umbral de similitud. |
 
-### Admin
+### ⚙️ Sistema y Consolidación
 
 | Tool | Descripción |
 |------|-------------|
-| `guardar` | Persiste el grafo a disco |
-| `cargar` | Carga un grafo desde disco |
-| `exportar` | Exporta a Markdown legible |
+| `analizar` | Retorna radiografía completa, ratios de saturación y tamaño del cerebro. |
+| `consolidar_proponer` | **Fase 1:** Sugiere agrupaciones lógicas de fragmentos huérfanos sin afectar la DB. |
+| `consolidar_ejecutar` | **Fase 2:** Ejecuta el nombramiento del nodo MEDIO que amarra a los huérfanos. |
+| `rebalancear` | Reorganiza matemáticamente el grafo en base a relevancia y tiempo de vida. |
 
-## Ejemplos de Uso
+### 🚨 Admin
 
-### Guardar un recuerdo
-```
-Usuario: "Memoriza que mi banda favorita es Deftones"
-Agente → memorizar(texto="La banda favorita de r1cky es Deftones", tipo="MEMORIA")
-```
-
-### Buscar recuerdos
-```
-Usuario: "¿Qué bandas me gustan?"
-Agente → recordar(consulta="bandas musicales favoritas", cantidad=5)
-```
-
-### Ver estadísticas
-```
-Usuario: "¿Cómo está tu memoria?"
-Agente → analizar()
-```
+| Tool | Descripción |
+|------|-------------|
+| `guardar` | Fuerza una instantánea a disco. |
+| `cargar` | Destruye la memoria en RAM actual cargando una diferente. |
+| `exportar` | Exporta la topología a un `.md` legible. |
 
 ## Arquitectura
 
-```
+```text
 novadb-mcp/
 ├── src/novadb_mcp/
-│   ├── server.py        # FastMCP server
-│   ├── config.py        # Configuración (env vars)
-│   ├── serializers.py   # Node → JSON
+│   ├── server.py        # Configuración del `FastMCP` server
+│   ├── config.py             
+│   ├── serializers.py        
 │   └── tools/
-│       ├── memoria.py   # memorizar, recordar, obtener
-│       ├── contexto.py  # reflejar, actualizar, conectar
-│       ├── sistema.py   # analizar, rebalancear
-│       └── admin.py     # guardar, cargar, exportar
-└── tests/
+│       ├── memoria.py   
+│       ├── contexto.py  
+│       ├── sistema.py   
+│       └── admin.py     
 ```
-
-## Dependencias
-
-- `mcp>=1.0.0` — Protocolo MCP
-- `novadb` — Motor de memoria (referencia local)
-
-## License
-
-MIT

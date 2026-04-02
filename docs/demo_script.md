@@ -1,68 +1,74 @@
-# Demo Script — NovaDB
+# Guía de Demostración — NovaDB
 
-## Setup (Before Recording)
+## Preparación (Antes de Grabar/Mostrar)
 
-1. Start with a clean NovaDB instance
-2. Open MindReader in browser at `http://localhost:8000`
-3. Have a terminal ready with the NovaDB REPL or agent
+1. Comienza con una instancia limpia de NovaDB.
+2. Abre MindReader en el navegador en `http://localhost:4321`.
+3. Ten una terminal lista con tu agente (ej. OpenCode) conectado por MCP.
 
-## Scene 1: Empty Graph (30s)
+## Escena 1: Grafo Vacío (30s)
 
-**Narration:** "This is NovaDB — a semantic memory engine for AI agents. Right now the graph is empty."
+**Narración:** "Esto es NovaDB — un motor de memoria semántica y relacional para agentes de IA. Ahora mismo, la mente está en blanco."
 
-- Show the MindReader dashboard with an empty state or single root node
+- Muestra el dashboard de MindReader con un estado vacío o un solo nodo raíz.
 
-## Scene 2: Storing Memories (60s)
+## Escena 2: Almacenando Memorias (60s)
 
-**Narration:** "Let's feed it some knowledge and watch the hierarchy build itself."
+**Narración:** "Vamos a darle algo de conocimiento y ver cómo la jerarquía se construye a sí misma orgánicamente."
 
-Add memories one by one via the agent:
+Agrega memorias una por una a la IA:
 
-```
-1. "My favorite band is Deftones"
-2. "I also like Tool and A Perfect Circle"
-3. "I went to a Deftones concert in 2024"
-4. "My startup uses React and TypeScript"
-5. "We deploy on AWS Lambda"
-6. "Lambda was too expensive for our 5-minute jobs"
-```
-
-**What to show:** Watch nodes appear in the graph. After 3+ memories cluster, show a MEDIO forming automatically.
-
-## Scene 3: Search — O(√N) (45s)
-
-**Narration:** "Now let's search. The engine doesn't match text — it matches meaning."
-
-```
-User: "What music do I like?"
+```text
+1. "Mi banda favorita es Deftones"
+2. "También me gustan Tool y A Perfect Circle"
+3. "Fui a un concierto de Deftones en 2024"
+4. "Mi startup usa Astro, React y TypeScript"
+5. "Desplegamos el backend en AWS Lambda"
+6. "Lambda resultó ser muy caro para trabajos de 5 minutos"
 ```
 
-**What to show:** The graph highlights the path MACRO → MEDIO → MEMORIA. Only relevant nodes light up.
+**Visión:** Observa cómo aparecen los nodos azules (MEMORIA) en el grafo. 
 
-## Scene 4: Hierarchy Inspection (30s)
+## Escena 3: Consolidación Agentic (60s)
 
-**Narration:** "Click any node to see its full context — origin, access count, relationships."
+**Narración:** "Aquí es donde entra la verdadera inteligencia. Las memorias similares se atraen por proximidad semántica. El agente ahora detectará estos patrones."
 
-- Click a MEDIO node
-- Show the side panel with metadata
+- Pídele al agente: "Revisa mi memoria y fíjate si hay conceptos que puedas agrupar."
+- El agente utilizará internamente `consolidar_proponer`.
+- El agente responderá: "Encontré un grupo sobre Música Rock/Metal y otro sobre Arquitectura Cloud. ¿Te parece si los agrupo?"
+- Respondes: "Sí, hazlo."
+- El agente utiliza `consolidar_ejecutar`.
 
-## Scene 5: MCP Integration (45s)
+**Visión:** De la nube de puntos se forman mágicamente dos nodos MEDIO, ordenando los pensamientos.
 
-**Narration:** "NovaDB works with any AI agent via MCP. Here it is powering OpenCode."
+## Escena 4: Búsqueda Semántica — O(√N) (45s)
 
-- Show agent conversation where it recalls stored memories
-- Demonstrate `recordar`, `memorizar`, `analizar` tools
+**Narración:** "Ahora vamos a buscar. Este motor no busca coincidencias de texto, busca significado y navega el árbol."
 
-## Scene 6: Live Update (30s)
+```text
+Usuario: "¿Qué música me gusta?"
+```
 
-**Narration:** "And if we add a memory right now..."
+**Mecánica:** El Agente usa la herramienta `recordar`.
+**Visión:** La respuesta de la IA ("Te gusta Deftones, Tool, etc.") demuestra que encontró la información exacta sin iterar sobre memorias irrelevantes de AWS.
 
-- Type a new memory in terminal
-- Watch the graph update in real-time (WebSocket or poll)
+## Escena 5: Inspección de Jerarquía (30s)
 
-## Closing (15s)
+**Narración:** "Nova permite hacer zoom en la psique del usuario. Cada elemento tiene relaciones gravitacionales."
 
-**Narration:** "NovaDB — semantic memory that thinks in hierarchies. O(√N) search, automatic clustering, MCP-native."
+- Haz clic en un nodo MEDIO en el MindReader.
+- Muestra el panel lateral con la metadata, el texto, y la lista de hijos (memorias asociadas).
 
-- Show final graph state
-- Flash the GitHub repo URL
+## Escena 6: Actualización en Vivo (30s)
+
+**Narración:** "Todo el sistema reacciona en tiempo real a las interacciones de tu agente."
+
+- Pide a la IA que almacene un nuevo dato técnico.
+- Observa cómo aparece la nueva esfera instantáneamente en el visor 3D en la órbita de su contexto correcto.
+
+## Cierre (15s)
+
+**Narración:** "NovaDB — memoria semántica estructurada, que piensa en jerarquías. Búsqueda O(√N), clustering colaborativo IA-humano, nativo de MCP."
+
+- Muestra el estado final del grafo girando majestuosamente.
+- Muestra la URL del repositorio de GitHub.

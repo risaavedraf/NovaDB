@@ -14,21 +14,21 @@ La memoria y almacenamiento tradicional falla en contextos de Inteligencia Artif
 - Las DB de Grafo puras (Neo4J) *requieren trabajo manual para enlazar conocimiento*.
 
 **NovaDB une los 3 mundos:**
-1. **Búsqueda Matemática (Cosenos):** Comparamos vectores para entender *qué significa* el dato en vez de buscar un texto exacto.
-2. **Jerarquía Automática:** Las memorias similares se atraen. Con suficiente masa crítica algorítmica, el sistema exige que se agrupen solas.
-3. **Persistencia Transparente:** Cero configuraciones pesadas. Guarda en JSON limpio en tu SSD local o en MessagePack para binarios ultrarrápidos.
+1. **Búsqueda Matemática (Cosenos):** Comparamos vectores matemáticos (embeddings) para entender *qué significa* el dato en vez de buscar texto exacto.
+2. **Jerarquía Automática y Agentic:** Las memorias similares se atraen. Con suficiente gravitación semántica, el sistema exige (Fase 1) que un Agente IA las agrupe definitivamente en clusters (Fase 2).
+3. **Persistencia Transparente:** Guarda en JSON limpio en tu SSD local para auditar, o en MessagePack para binarios ultrarrápidos listos para producción.
 
 ## 🏢 Las Tres Capas de NovaDB
 
 - **MACRO:** Conceptos abarcadores inmensos (Ej: `Arquitecturas Cloud`, `Tecnologías del Startup`).
-- **MEDIO:** Clúster de agrupamiento semántico inducido dinámicamente. (Ej: `Amazon Web Services`, `Google Cloud`).
-- **MEMORIA:** El dato quirúrgico puro. (Ej: `A r1cky le pareció muy caro Lambda para procesos de 5min`).
+- **MEDIO:** Clúster de agrupamiento semántico inducido dinámicamente y nombrado por el agente. (Ej: `Amazon Web Services`, `Google Cloud`).
+- **MEMORIA:** El dato atómico puro. (Ej: `A r1cky le pareció muy caro Lambda para procesos de 5min`).
 
 ---
 
 ## ⚙️ Cómo Comenzar
 
-Clona este repositorio donde desees y ejecuta el ecosistema local de Nova en una burbuja limpia (venv).
+Clona este repositorio donde desees y ejecuta el ecosistema local de Nova en una burbuja limpia (venv). Alternativamente, usa `uv`.
 
 ### 1. Instalación
 ```powershell
@@ -36,30 +36,19 @@ Clona este repositorio donde desees y ejecuta el ecosistema local de Nova en una
 python -m venv venv
 .\venv\Scripts\activate
 
-# Instalar los poderes mentales (Google GenAI, Numpy, Dotenv, msgpack)
+# Instalar los poderes mentales 
 pip install -r requirements.txt
 ```
 
 ### 2. Configura tu Identidad (API KEY)
-Debes crear un archivo `.env` en la raíz de la carpeta (ya está ignorado por GitHub, tu secreto está a salvo) y especificar:
+Crea un archivo `.env` en la raíz de la carpeta base y especifica:
 ```env
 GEMINI_API_KEY=AIzaSyTuLlaveSeguraGigante...
 ```
+Si no haces esto, NovaDB usará el embedder local (`sentence-transformers`) generador de 384 dimensiones.
 
-### 3. Ejecuta la Prueba Diagnóstica Semántica
-Verifica que tu modelo de búsqueda logre comprender la diferencia contextual entre "Gatos" y "SQL":
-```powershell
-python -m novadb.test.test_similitud
-```
-
-### 4. Configuración de Logging (opcional)
-Por defecto NovaDB usa el nivel INFO y imprime a stdout:
-```python
-import logging
-logging.getLogger("novadb").setLevel(logging.DEBUG)
-```
-
-O guardar a archivo:
+### 3. Configuración de Logging (opcional)
+Por defecto NovaDB usa el nivel INFO y guarda en un archivo si se opera dentro del servidor MCP para no ensuciar el stream:
 ```python
 db = NovaDB(embedder=GeminiEmbedder(), log_file="./novadb.log", log_level="DEBUG")
 ```
@@ -69,27 +58,28 @@ db = NovaDB(embedder=GeminiEmbedder(), log_file="./novadb.log", log_level="DEBUG
 ## 🛠️ Estado del Proyecto y Roadmap
 
 - [x] **Fase 1 (Core):** Implementación de clase base `Node`, búsqueda jerárquica O(√N), serialización JSON/MessagePack.
-- [x] **Fase 2 (Consolidación Automática):** Consolidador con autobalanceo dinámico de jerarquía.
-- [x] **Fase 3 (Integración Nativa):** Plug & Play en Alma Nova con `memory_manager.py`.
-- [x] **Fase 4 (Pulido):** Decaimiento temporal, índices jerárquicos, type hints (~95%), logging estructurado.
+- [x] **Fase 2 (Consolidación Agentic v1.2):** Consolidador inteligente en dos fases (Proponer/Ejecutar) delegando el control de nombres a modelos de lenguaje o humanos.
+- [x] **Fase 3 (Integración Nativa MCP):** Plug & Play para todo tipo de interfaces modernas.
+- [x] **Fase 4 (Visualizador MindReader):** Visor en tiempo real 3D (React+Astro).
 
 ---
 
 ## 📋 Changelog
 
+### v1.2 (2026-03-30)
+- **Consolidación en 2 Fases:** Implementados los métodos `consolidar_proponer()` y `consolidar_ejecutar()`. Fin a los auto-grupos ruidosos, el agente IA o el humano escoge el nombre humano del clúster (MEDIO).
+- **Hard-Link de MACRO:** Los nuevos nodos MEDIO ahora siempre buscan un padre MACRO automáticamente previniendo ser "huérfanos".
+- **Nueva dependencia:** Compatibilidad con UV y servidores FastMCP estandarizados.
+
 ### v1.1 (2026-03-25)
 - **Temporal decay:** Campo `relevancia` con decaimiento exponencial + access boost
 - **Índices jerárquicos:** Búsqueda O(√N) garantizada, no solo aspiracional
-- **Type hints:** ~95% coverage con py.typed marker para mypy
-- **Logging:** Reemplazado print() por Python logging módulo estructurado
-- **98 tests nuevos:** 126 tests totales, todos pasando
-- **Bugfix:** `get_mas_relevante()` renombrado correctamente
-- **Nueva dependencia:** msgpack agregado a requirements.txt
+- **Logging estricto:** File output para evitar corrupción del stream STDOUT durante comunicación de Model Context Protocol (MCP).
 
 ### v1.0 (2026-03-20)
 - Release inicial con arquitectura de 3 capas (MACRO/MEDIO/MEMORIA)
-- Consolidación automática con threshold adaptativo
-- Export a Markdown y MessagePack
+- Consolidación automática offline.
 
 ---
 _Mesa de diseño presidida, testeada y estructurada por **r1cky**._
+

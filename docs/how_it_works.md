@@ -1,58 +1,58 @@
-# How NovaDB Works
+# Cómo funciona NovaDB
 
-## The Problem
+## El Problema
 
-Traditional databases fail for AI memory:
+Las bases de datos tradicionales fallan al intentar ser la "memoria" de una IA:
 
-- **SQL/MongoDB** — Exact matches only. Ask "what do I like?" and they return nothing unless you stored that exact string.
-- **Vector DBs** (ChromaDB) — Understand meaning but have no structure. Flat lists of vectors with no parent-child relationships.
-- **Graph DBs** (Neo4j) — Powerful relationships but require manual wiring. No automatic clustering.
+- **SQL/MongoDB** — Solo coincidencias exactas. Si preguntas "¿qué me gusta?" y no almacenaste esa cadena exacta, no devuelve nada.
+- **Bases de Datos Vectoriales** (ChromaDB) — Entienden el significado semántico pero no tienen estructura. Son listas planas de vectores sin relaciones jerárquicas padre-hijo.
+- **Bases de Datos de Grafos** (Neo4j) — Tienen relaciones poderosas pero requieren conexiones manuales. No tienen agrupamiento (clustering) automático.
 
-NovaDB combines all three.
+NovaDB combina las tres aproximaciones.
 
-## The Three Layers
+## Las Tres Capas
 
-Every piece of knowledge lives in one of three tiers:
+Cada pieza de conocimiento vive en uno de los tres niveles:
 
-### MACRO — The Big Picture
-Abstract concepts that span multiple domains. Think "Cloud Architectures" or "Startup Technologies". These are the gravitational centers of the knowledge graph.
+### MACRO — El Contexto Global
+Conceptos abstractos que abarcan múltiples dominios. Piensa en "Arquitecturas Cloud" o "Tecnologías de Startups", "Perfil del Usuario", "Proyectos Personales". Estos son los centros gravitacionales del grafo de conocimiento.
 
-### MEDIO — The Cluster
-Natural groupings that emerge from semantic similarity. "AWS Services", "Google Cloud Tools". These form dynamically — you don't create them manually.
+### MEDIO — El Clúster
+Agrupaciones naturales que emergen de la similitud semántica. "Servicios de AWS", "Lenguajes de Programación", "Desarrollo de Space Colonizer". Estos se forman de manera semi-automática a través del Agente (Fase 1 y Fase 2 de Consolidación).
 
-### MEMORIA — The Detail
-Surgical facts. "r1cky thought Lambda was too expensive for a 5-minute process". This is where the raw knowledge lives.
+### MEMORIA — El Detalle
+Hechos quirúrgicos y atómicos. "r1cky pensó que Lambda era muy caro para un proceso de 5 minutos". Aquí es donde vive el conocimiento crudo.
 
-## How Memories Cluster
+## Cómo se Agrupan las Memorias (Consolidación Agentic)
 
-1. You store a memory with text → Gemini converts it to a vector
-2. NovaDB compares the vector against existing nodes using **cosine similarity**
-3. If similarity exceeds a threshold → the new memory becomes a child of the best-match parent
-4. If no parent is close enough → a new MEDIO cluster forms automatically
-5. When enough MEDIOs cluster around a theme → a MACRO emerges
+1. Guardas una memoria con texto → Gemini (o el modelo local) lo convierte en un vector matemático.
+2. NovaDB compara el vector contra los nodos existentes utilizando **similitud coseno**.
+3. Si la similitud supera un umbral → la nueva memoria se ancla temporalmente al MACRO o MEDIO que mejor coincida, o queda como "huérfana" orbitando cerca de sus vecinos.
+4. **Fase 1 (Proponer)** → El motor analiza qué memorias huérfanas están muy cerca unas de otras (formando constelaciones) y le propone al Agente IA agruparlas.
+5. **Fase 2 (Ejecutar)** → El Agente IA aprueba el clúster, decide un nombre humano para él, y NovaDB crea un nuevo nodo MEDIO, conectándolo dinámicamente al MACRO padre más similar para mantener la gravedad del sistema.
 
-This is **induced hierarchy** — structure that builds itself from content.
+Esto es **jerarquía inducida** — una estructura que se construye y organiza a sí misma de manera orgánica, con supervisión humana/agentic.
 
-## Temporal Decay
+## Decaimiento Temporal (Olvido Gradual)
 
-Memories have a `relevancia` score that decays over time:
+Las memorias tienen un puntaje de `relevancia` que decae con el tiempo, imitando al cerebro humano:
 
-- Fresh memories score higher
-- Frequently accessed memories get a boost
-- The consolidator periodically rebalances the tree based on these scores
+- Las memorias frescas tienen mayor puntaje.
+- Las memorias consultadas frecuentemente reciben un impulso (boost) de relevancia.
+- El sistema de rebalanceo prioriza y organiza el árbol basándose en estos puntajes.
 
-## Search: O(√N) Guaranteed
+## Búsqueda: O(√N) Garantizado
 
-Traditional linear search checks every node. NovaDB uses hierarchical indices:
+Una búsqueda lineal tradicional revisa cada nodo. NovaDB utiliza índices jerárquicos:
 
-1. Match the query against MACRO nodes first (fewest nodes)
-2. Drill into the winning MACRO's MEDIOs
-3. Drill into the winning MEDIO's MEMORIAS
+1. Compara la consulta espacialmente contra los nodos MACRO primero (son los menos).
+2. Profundiza en los nodos MEDIO del MACRO ganador.
+3. Profundiza en las MEMORIAS del MEDIO ganador.
 
-Result: **O(√N) search time** regardless of graph size.
+Resultado: **Tiempo de búsqueda O(√N)** sin importar el tamaño gigantesco que alcance el grafo.
 
-## Persistence
+## Persistencia Binaria
 
-Two formats:
-- **JSON** — Human-readable, good for debugging
-- **MessagePack** — Binary, fast, compact for production
+Dos formatos disponibles:
+- **JSON** — Legible por humanos, excelente para debugging y auditorías.
+- **MessagePack** — Formato binario ultrarrápido, compacto y optimizado, recomendado para producción.
