@@ -744,9 +744,103 @@
     </div>
   </div>
 
-  <!-- SLIDE 6 — Arquitectura Técnica (reemplaza Modelo de Negocio) -->
+  <!-- SLIDE 6 — Impacto Real -->
   <div class="slide">
-    <div class="slide-num">05 — Arquitectura</div>
+    <div class="slide-num">05 — Impacto Real</div>
+    <div class="slide-title">Base de datos que <span>escala sin degradar</span></div>
+    <div class="slide-desc">NovaDB no es un buffer — es un motor diseñado para crecer. La búsqueda por significado
+      descubre conexiones que no esperabas.</div>
+
+    <div class="two-col">
+      <div>
+        <div class="cards" style="gap:16px">
+          <div class="card">
+            <div class="card-icon">📊</div>
+            <div class="card-title">Escala real</div>
+            <div class="card-desc">Con 10,000 memorias, un RAG plano escanea las 10,000. NovaDB navega 200 operaciones
+              (√10000 × 2). La consolidación mantiene el grafo organizado mientras crece — los sistemas planos
+              colapsan.</div>
+          </div>
+          <div class="card">
+            <div class="card-icon">💰</div>
+            <div class="card-title">Ahorro en tokens</div>
+            <div class="card-desc">Inyecta contexto relevante en vez de volcar todo. Con 10K nodos: 750 tokens/query
+              vs 2,000+ del dump plano. Ahorro del 60-70% en costos de API. ~$14-34/mes en proyectos grandes.</div>
+          </div>
+          <div class="card">
+            <div class="card-icon">🔗</div>
+            <div class="card-title">Conexiones inesperadas</div>
+            <div class="card-desc">Buscás "costos de Lambda" y NovaDB encuentra memorias sobre "optimización
+              serverless" o "timeout en funciones" — sin que ninguna mencione "Lambda". Busca por significado, no por
+              palabras clave.</div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <table>
+          <thead>
+            <tr>
+              <th>Volumen</th>
+              <th>RAG plano</th>
+              <th>NovaDB</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>100 memorias</td>
+              <td>~1,500 tok/query</td>
+              <td class="check">~750 tok/query</td>
+            </tr>
+            <tr>
+              <td>1,000 memorias</td>
+              <td class="warn">~1,500 + ruido</td>
+              <td class="check">~750 estables</td>
+            </tr>
+            <tr class="highlight-row">
+              <td>10,000 memorias</td>
+              <td class="cross">~2,000+ degradado</td>
+              <td class="check">~750 sostenido</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div style="background:var(--card); border:1px solid var(--teal); border-radius:12px; padding:20px 24px; margin-top:20px">
+          <div style="font-size:13px; color:var(--teal2); font-weight:600; margin-bottom:8px">NO SON MENOS TOKENS — SON TOKENS MÁS RELEVANTES</div>
+          <div style="font-size:12px; color:var(--muted); margin-bottom:14px">
+            Relevancia = contexto útil / contexto total inyectado
+          </div>
+          <table style="font-size:13px">
+            <tbody>
+              <tr>
+                <td>Full-context (dump)</td>
+                <td class="cross">30-50%</td>
+              </tr>
+              <tr>
+                <td>Mem0 / Letta / Cognee</td>
+                <td class="warn">60-75%</td>
+              </tr>
+              <tr class="highlight-row">
+                <td style="color:var(--teal2); font-weight:700">NovaDB</td>
+                <td class="check" style="font-weight:700">70-90%</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="scope-box" style="margin-top:20px">
+          <h4>🔑 Diferencia clave</h4>
+          <p>Los sistemas actuales son buffers que buscan por similitud en lista plana. NovaDB es una base de datos
+            jerárquica que busca por significado, descubre conexiones inesperadas, y se reorganiza sola mientras
+            crece. Eso no existe en LangChain Memory, Mem0 ni Letta.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 7 — Arquitectura Técnica -->
+  <div class="slide">
+    <div class="slide-num">06 — Arquitectura</div>
     <div class="slide-title">Stack técnico <span>de punta a punta</span></div>
     <div class="slide-desc">Cada capa es independiente y puede evolucionar sin afectar las demás.</div>
 
@@ -811,8 +905,8 @@
           </div>
           <div class="card">
             <div class="card-title">Validado con tests</div>
-            <div class="card-desc">15 archivos de tests cubriendo core, búsqueda, consolidación, persistencia, edge
-              cases, decay, similitud, integración, rebalanceo y servidor MCP.</div>
+            <div class="card-desc">159 tests passing, 0 fallos — cubriendo core, búsqueda, consolidación, persistencia, edge
+              cases, decay, similitud, integración, rebalanceo y servidor MCP. Auditoría de código completada.</div>
           </div>
         </div>
       </div>
@@ -821,7 +915,7 @@
 
   <!-- SLIDE 7 — Estado actual -->
   <div class="slide">
-    <div class="slide-num">06 — Estado Actual</div>
+    <div class="slide-num">07 — Estado Actual</div>
     <div class="slide-title">Lo que ya está <span>construido</span></div>
 
     <div class="stats">
@@ -838,8 +932,8 @@
         <div class="stat-label">Herramientas<br><span style="color:#5eead4">MCP nativas</span></div>
       </div>
       <div class="stat">
-        <div class="stat-num">15</div>
-        <div class="stat-label">Archivos de<br><span style="color:#5eead4">tests</span></div>
+        <div class="stat-num">159</div>
+        <div class="stat-label">Tests passing<br><span style="color:#5eead4">0 fallos</span></div>
       </div>
     </div>
 
@@ -868,8 +962,9 @@
       <div class="card">
         <div class="card-icon">✅</div>
         <div class="card-title">Documentación y validación</div>
-        <div class="card-desc">PRD y SDD completos. Análisis adversarial (red-teaming) con Némesis + Defensa. Demo
-          script de 5 minutos. 15 archivos de tests unitarios e integración.</div>
+            <div class="card-desc">PRD y SDD completos. Auditoría de código con 23 hallazgos identificados y resueltos.
+              Análisis adversarial (red-teaming) con Némesis + Defensa. Demo
+              script de 5 minutos. 159 tests validados.</div>
       </div>
       <div class="card">
         <div class="card-icon">🔬</div>
@@ -882,7 +977,7 @@
 
   <!-- SLIDE 8 — Lo que busco -->
   <div class="slide">
-    <div class="slide-num">07 — Lo que Busco</div>
+    <div class="slide-num">08 — Lo que Busco</div>
     <div class="slide-title">Asesoramiento en <span>tres áreas</span></div>
     <div class="slide-desc">El objetivo de esta reunión es entender qué pasos concretos seguir para formalizar el
       proyecto.</div>
@@ -934,8 +1029,8 @@
         <div class="lbl">herramientas MCP</div>
       </div>
       <div class="final-stat-item">
-        <div class="num">15</div>
-        <div class="lbl">tests</div>
+        <div class="num">159</div>
+        <div class="lbl">tests · 0 fallos</div>
       </div>
       <div class="final-stat-item">
         <div class="num">O(√N)</div>

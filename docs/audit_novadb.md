@@ -12,10 +12,11 @@
 |---|---|
 | Archivos de código auditados | 22 |
 | Líneas de código (aprox.) | ~2,500 |
-| Hallazgos **CRÍTICO** 🔴 | 5 |
-| Hallazgos **MEDIO** 🟡 | 8 |
+| Hallazgos **CRÍTICO** 🔴 | 5 → **2 restantes** (3 ✅) |
+| Hallazgos **MEDIO** 🟡 | 8 → **5 restantes** (3 ✅) |
 | Hallazgos **MENOR** 🟢 | 6 |
 | Hallazgos **ESTILO** ⚪ | 4 |
+| Tests suite | **159/159 passing** ✅ |
 
 **Veredicto General**: El código es funcional, bien estructurado y muestra un diseño sólido con separación clara de responsabilidades. Los hallazgos críticos no son "bugs que rompen todo" sino **vulnerabilidades estructurales** que, de no abordarse, podrían generar problemas en producción o cuando el grafo escale.
 
@@ -23,31 +24,31 @@
 
 ## Tabla de Hallazgos
 
-| # | Severidad | Componente | Archivo | Descripción |
-|---|---|---|---|---|
-| C1 | 🔴 CRÍTICO | Core | `graph.py` | `get_node()` tiene efecto colateral en lectura (muta relevancia) |
-| C2 | 🔴 CRÍTICO | MindReader | `api.py` | API key hardcodeada en código fuente |
-| C3 | 🔴 CRÍTICO | Core | `embedder.py` | `GeminiEmbedder` no reporta `dims` — validación de dimensiones bypaseada |
-| C4 | 🔴 CRÍTICO | Core | `graph.py` | Listas `vecinos[]` crecen sin límite (no se aplica `k_vecinos` cap en inserción bidireccional) |
-| C5 | 🔴 CRÍTICO | MCP | `server.py` | `sys.path.insert` hardcodeado — frágil en despliegue |
-| M1 | 🟡 MEDIO  | Core | `novadb.py` | `connect()` es unidireccional silenciosamente |
-| M2 | 🟡 MEDIO  | Core | `search.py` | Doble boost de relevancia en resultados de búsqueda |
-| M3 | 🟡 MEDIO  | Core | `consolidator.py` | `verificar_y_consolidar` escanea TODOS los nodos en cada insert — O(N) |
-| M4 | 🟡 MEDIO  | Storage | `disk.py` | Escritura no atómica — corrupción posible en crash |
-| M5 | 🟡 MEDIO  | MindReader | `api.py` | `db.get()` en loop del API muta el grafo en cada request |
-| M6 | 🟡 MEDIO  | Core | `logging_config.py` | `setup_logging` agrega handlers duplicados por cada instancia de NovaDB |
-| M7 | 🟡 MEDIO  | Core | `rebalancer.py` | `rebalancear()` llama `necesita_rebalanceo()` internamente — doble check |
-| M8 | 🟡 MEDIO  | MCP | `config.py` | Ruta `.env` calculada con 5 `.parent` — rompe si se mueve el package |
-| E1 | 🟢 MENOR  | Core | `node.py` | `datetime.now()` sin timezone — ambiguo entre máquinas |
-| E2 | 🟢 MENOR  | Core | `graph.py` | `indice_macro` duplica nodo ID como key → node como value (ya está en `nodes`) |
-| E3 | 🟢 MENOR  | Storage | `exporter.py` | `getattr(n, 'padres', [])` innecesario — todo Node tiene `padres` |
-| E4 | 🟢 MENOR  | MCP | `tools/*.py` | `sys.path.insert` repetido en 4 archivos |
-| E5 | 🟢 MENOR  | Core | `consolidator.py` | `_STOPWORDS` hardcodeadas — mantenimiento frágil |
-| E6 | 🟢 MENOR  | Project | `pyproject.toml` | No hay `[project.urls]` — sin links a repo/docs |
-| S1 | ⚪ ESTILO | Core | `graph.py` | f-strings en `logger.debug()` — evaluación innecesaria |
-| S2 | ⚪ ESTILO | Core | `novadb.py` | Mezcla español/inglés en nombres de métodos |
-| S3 | ⚪ ESTILO | MCP | varios | Docstrings en español en módulos MCP, inglés en core |
-| S4 | ⚪ ESTILO | Core | `node.py` | `to_dict()` serializa `vector` pero `from_dict()` asume float32 |
+| # | Severidad | Componente | Archivo | Descripción | Estado |
+|---|---|---|---|---|---|
+| C1 | 🔴 CRÍTICO | Core | `graph.py` | `get_node()` tiene efecto colateral en lectura (muta relevancia) | ✅ Fix 2026-04-04 |
+| C2 | 🔴 CRÍTICO | MindReader | `api.py` | API key hardcodeada en código fuente | ✅ Fix 2026-04-04 |
+| C3 | 🔴 CRÍTICO | Core | `embedder.py` | `GeminiEmbedder` no reporta `dims` — validación de dimensiones bypaseada | ✅ Fix 2026-04-04 |
+| C4 | 🔴 CRÍTICO | Core | `graph.py` | Listas `vecinos[]` crecen sin límite (no se aplica `k_vecinos` cap en inserción bidireccional) | 🔲 Pendiente |
+| C5 | 🔴 CRÍTICO | MCP | `server.py` | `sys.path.insert` hardcodeado — frágil en despliegue | 🔲 Pendiente |
+| M1 | 🟡 MEDIO  | Core | `novadb.py` | `connect()` es unidireccional silenciosamente | 🔲 Pendiente |
+| M2 | 🟡 MEDIO  | Core | `search.py` | Doble boost de relevancia en resultados de búsqueda | 🔲 Pendiente |
+| M3 | 🟡 MEDIO  | Core | `consolidator.py` | `verificar_y_consolidar` escanea TODOS los nodos en cada insert — O(N) | 🔲 Pendiente |
+| M4 | 🟡 MEDIO  | Storage | `disk.py` | Escritura no atómica — corrupción posible en crash | ✅ Fix 2026-04-04 |
+| M5 | 🟡 MEDIO  | MindReader | `api.py` | `db.get()` en loop del API muta el grafo en cada request | ✅ Fix 2026-04-04 |
+| M6 | 🟡 MEDIO  | Core | `logging_config.py` | `setup_logging` agrega handlers duplicados por cada instancia de NovaDB | ✅ Fix 2026-04-04 |
+| M7 | 🟡 MEDIO  | Core | `rebalancer.py` | `rebalancear()` llama `necesita_rebalanceo()` internamente — doble check | 🔲 Pendiente |
+| M8 | 🟡 MEDIO  | MCP | `config.py` | Ruta `.env` calculada con 5 `.parent` — rompe si se mueve el package | 🔲 Pendiente |
+| E1 | 🟢 MENOR  | Core | `node.py` | `datetime.now()` sin timezone — ambiguo entre máquinas | 🔲 Pendiente |
+| E2 | 🟢 MENOR  | Core | `graph.py` | `indice_macro` duplica nodo ID como key → node como value (ya está en `nodes`) | 🔲 Pendiente |
+| E3 | 🟢 MENOR  | Storage | `exporter.py` | `getattr(n, 'padres', [])` innecesario — todo Node tiene `padres` | 🔲 Pendiente |
+| E4 | 🟢 MENOR  | MCP | `tools/*.py` | `sys.path.insert` repetido en 4 archivos | 🔲 Pendiente |
+| E5 | 🟢 MENOR  | Core | `consolidator.py` | `_STOPWORDS` hardcodeadas — mantenimiento frágil | 🔲 Pendiente |
+| E6 | 🟢 MENOR  | Project | `pyproject.toml` | No hay `[project.urls]` — sin links a repo/docs | 🔲 Pendiente |
+| S1 | ⚪ ESTILO | Core | `graph.py` | f-strings en `logger.debug()` — evaluación innecesaria | 🔲 Pendiente |
+| S2 | ⚪ ESTILO | Core | `novadb.py` | Mezcla español/inglés en nombres de métodos | 🔲 Pendiente |
+| S3 | ⚪ ESTILO | MCP | varios | Docstrings en español en módulos MCP, inglés en core | 🔲 Pendiente |
+| S4 | ⚪ ESTILO | Core | `node.py` | `to_dict()` serializa `vector` pero `from_dict()` asume float32 | 🔲 Pendiente |
 
 ---
 
@@ -76,6 +77,8 @@ def get_node(self, node_id: str) -> Optional[Node]:
 
 **Solución**: Separar en `get_node()` (lectura pura) y `access_node()` (lectura + boost). Solo boostar en `search()`.
 
+> **✅ RESUELTO (2026-04-04)**: `get_node()` ahora es lectura pura (`return self.nodes.get(node_id)`). El boost de relevancia solo ocurre en `search.py` vía `update_relevancia_on_access()` explícito. MindReader ahora usa `db.graph.nodes.get()` directo. Tests actualizados (2 tests + 1 nuevo).
+
 ---
 
 ### 🔴 C2 — API Key hardcodeada
@@ -91,6 +94,8 @@ API_KEY = os.getenv("MINDREADER_SECRET", "nova-secret-key-2026")
 **Impacto**: Bajo en desarrollo local, pero es un anti-patrón que un profe podría señalar como mala práctica de seguridad.
 
 **Solución**: Eliminar el default. Si no hay key, que el API falle con error claro en vez de funcionar inseguro.
+
+> **✅ RESUELTO (2026-04-04)**: Default hardcodeado eliminado. Si `MINDREADER_SECRET` no existe, se imprime warning y el API funciona sin auth (para dev/demo). Si se setea, se comporta como antes. `verify_api_key` solo valida si `API_KEY` está configurado.
 
 ---
 
@@ -114,6 +119,8 @@ if current_dims is None:
 La validación de dimensiones **nunca se ejecuta** cuando se usa Gemini. Si alguien carga una DB hecha con `LocalEmbedder` (384 dims) usando `GeminiEmbedder` (768 dims), *no habrá error* — solo resultados basura silenciosos.
 
 **Solución**: Agregar `dims = 768` al `GeminiEmbedder`.
+
+> **✅ RESUELTO (2026-04-04)**: `_dims = 768` como class attribute + `@property dims` que lo retorna. Ahora `_validate_embedder_dims()` en novadb.py valida correctamente la compatibilidad de dimensiones al cargar una DB.
 
 ---
 
@@ -240,6 +247,8 @@ def save_to_msgpack(graph, path, ...):
 
 **Solución**: Escribir a un archivo temporal (`path + ".tmp"`) y luego hacer un `os.rename()` atómico. Esto es una operación atómica a nivel de filesystem.
 
+> **✅ RESUELTO (2026-04-04)**: Ambos `save_to_json` y `save_to_msgpack` ahora escriben a `path + ".tmp"` y hacen `os.replace()` atómico. En caso de error, se limpia el archivo temporal. `os.replace()` es atómico a nivel de filesystem en Windows (NTFS) y Linux.
+
 ---
 
 ### 🟡 M5 — MindReader muta el grafo al renderizar
@@ -254,6 +263,8 @@ for h_id in n.hijos:
 **Problema**: Combinado con C1, cada vez que el visualizador carga el grafo, llama `db.get()` por cada hijo y vecino. Esto muta `accesos` y `relevancia` de *todos* los nodos visibles. Un simple F5 en el dashboard infla la relevancia del grafo completo.
 
 **Solución**: Usar `db.graph.nodes.get(h_id)` directamente (acceso sin side-effects), o resolver C1 primero.
+
+> **✅ RESUELTO (2026-04-04)**: Resuelto junto con C1. MindReader ahora usa `db.graph.nodes.get(h_id)` y `db.graph.nodes.get(v_id)` en el loop de renderizado — acceso directo al dict sin pasar por `db.get()`. Además, `get_node()` ya no muta estado, así que el riesgo desaparece por partida doble.
 
 ---
 
@@ -271,6 +282,8 @@ def setup_logging(level, log_file):
 **Problema**: Si se crea más de una instancia de `NovaDB` (o se llama `setup_logging` de nuevo), se agregan handlers duplicados. Cada mensaje de log se imprime N veces.
 
 **Solución**: Verificar si el logger ya tiene handlers antes de agregar.
+
+> **✅ RESUELTO (2026-04-04)**: `setup_logging()` ahora checkea `if logger.handlers: return logger` antes de agregar handlers. Es idempotente — múltiples instancias de `NovaDB` no duplican logs.
 
 ---
 
@@ -359,15 +372,15 @@ Porque no todo son bugs — hay cosas que están bien hechas:
 
 ## Prioridades de Corrección Sugeridas
 
-### Para la presentación (crítico, rápido de arreglar):
-1. **C3** — Agregar `dims = 768` al GeminiEmbedder (1 línea)
-2. **C2** — Quitar el default de la API key (1 línea)
-3. **M6** — Fix logging duplicado (3 líneas)
+### ✅ Para la presentación (COMPLETADO 2026-04-04):
+1. ~~**C3** — Agregar `dims = 768` al GeminiEmbedder~~ ✅
+2. ~~**C2** — Quitar el default de la API key~~ ✅
+3. ~~**M6** — Fix logging duplicado~~ ✅
+4. ~~**C1** — Separar `get_node` de access tracking~~ ✅ (movido desde post-presentación)
+5. ~~**M4** — Escritura atómica a disco~~ ✅ (movido desde post-presentación)
 
 ### Para robustez del sistema (post-presentación):
-4. **C1** — Separar `get_node` de access tracking
-5. **C4** — Cap bidireccional de vecinos
-6. **M4** — Escritura atómica a disco
+6. **C4** — Cap bidireccional de vecinos
 7. **M3** — Cache incremental de huérfanos
 
 ### Para limpieza de código (mejora continua):

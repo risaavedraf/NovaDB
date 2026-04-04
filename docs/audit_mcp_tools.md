@@ -23,6 +23,8 @@ Todos los llamados que modifican el grafo terminan en un `db.save(get_config().d
 **Solución**:
 Implementar un "file lock" (ej. `filelock` de Python) al hacer `db.save()` y hacer la escritura atómica (escribir a `.tmp` y luego renombrar) en `disk.py`.
 
+> **⚡ PARCIALMENTE RESUELTO (2026-04-04)**: La escritura atómica está implementada (`disk.py` escribe a `.tmp` + `os.replace()`). Esto previene corrupción del archivo en crash. Falta el file lock para prevenir writes concurrentes de múltiples hilos.
+
 ---
 
 ### 2. Path Traversal en `admin.py` (Vulnerabilidad de Host)

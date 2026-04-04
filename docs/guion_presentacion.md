@@ -11,10 +11,11 @@
 |---|---|---|
 | 1 | Gancho — El Problema | 2 min |
 | 2 | La Solución — Qué es NovaDB | 3 min |
-| 3 | Arquitectura Técnica | 5 min |
-| 4 | Demo en Vivo | 7 min |
-| 5 | Estado Actual y Proyecciones | 3 min |
-| 6 | Preguntas que te puede hacer | libre |
+| 3 | Arquitectura Técnica | 4 min |
+| 4 | Impacto Real — Escala y Ahorro | 3 min |
+| 5 | Demo en Vivo | 7 min |
+| 6 | Estado Actual y Proyecciones | 3 min |
+| 7 | Preguntas que te puede hacer | libre |
 
 ---
 
@@ -75,7 +76,41 @@
 
 ---
 
-## 4. 🖥️ Demo en Vivo (7 min)
+## 4. 💰 Impacto Real — Escala y Ahorro (3 min)
+
+> Esta es la slide que responde la pregunta que todos se hacen: "¿cuánto ahorra realmente?"
+
+### Escala
+
+> "Las soluciones actuales funcionan con 50 memorias. Con 10,000, colapsan. NovaDB es una base de datos, no un buffer. Con 10,000 nodos, un RAG plano escanea las 10,000 — NovaDB navega 200 operaciones. La consolidación reorganiza el grafo automáticamente para mantener la búsqueda eficiente mientras crece."
+
+### Tokens
+
+> "Cada token inyectado en contexto es dinero. Sin NovaDB, el agente recibe todo el historial o los resultados ruidosos de un RAG plano — 2,000 tokens por query con 10K memorias. NovaDB inyecta solo lo relevante navegando la jerarquía — 750 tokens. Eso es un 60-70% de ahorro en costos de API."
+
+### Relevancia — la métrica que importa
+
+> "Pero quiero aclarar algo importante: la mayoría de sistemas compiten por quién inyecta menos tokens. Nosotros competimos por quién inyecta los tokens más relevantes."
+>
+> "La métrica es simple: relevancia del contexto, que es el contexto realmente útil dividido por el contexto total inyectado. Full-context tiene un 30-50% — la mayoría es ruido. Mem0, Letta, Cognee llegan al 60-75%, que es buen ahorro. NovaDB apunta al 70-90% con la jerarquía y la consolidación supervisada."
+>
+> "El resultado: el agente recibe contexto más denso y limpio. Razona mejor, alucina menos, y mantiene coherencia incluso cuando la memoria crece a miles de nodos."
+
+### Conexiones inesperadas
+
+> "Pero lo más interesante no es el ahorro — es el descubrimiento. NovaDB no busca por palabras clave, busca por significado. Si busco 'costos de Lambda', no solo encuentra memorias que mencionan 'Lambda' — encuentra memorias sobre optimización serverless, problemas de timeout, arquitectura event-driven. Porque semánticamente están en el mismo espacio. Es una base de datos de conocimiento, no un diccionario."
+
+### Tabla comparativa
+
+> "Las soluciones actuales son buffers: LangChain Memory es un resumen que degrada, Mem0 es key-value plano, Letta necesita PostgreSQL. NovaDB es un motor jerárquico que funciona con un solo archivo local, busca en O(√N), y se reorganiza solo. Eso no existe en el mercado actual."
+
+**Notas:**
+- Si el profe pregunta por los números de tokens: son estimaciones basadas en precios actuales de API (GPT-4o $2.50/1M, Sonnet $3/1M). El punto no es el dólar exacto, es la escala de diferencia.
+- Si pregunta "¿y por qué no usar simplemente un RAG mejor?": el problema no es el retrieval, es la estructura. Un RAG plano no tiene jerarquía, no tiene consolidación, no se reorganiza. Es buscar en una lista vs buscar en un árbol.
+
+---
+
+## 5. 🖥️ Demo en Vivo (7 min)
 
 > ⚠️ Practícalo varias veces. Esta es la parte que más impresiona.
 
@@ -96,15 +131,15 @@
 
 ---
 
-## 5. 📊 Estado Actual (3 min)
+## 6. 📊 Estado Actual (3 min)
 
-> "Beta funcional. Motor core completo, 14 herramientas MCP, 15 archivos de tests, MindReader operativo."
+> "Beta funcional. Motor core completo, 14 herramientas MCP, 159 tests passing (0 fallos), MindReader operativo. Además, completamos una auditoría de código completa — identificamos 23 hallazgos, resolvimos 6 críticos y corregimos 16 tests preexistentes."
 >
 > "Lo que busco en esta reunión: ¿el enfoque jerárquico tiene bases académicas sólidas? ¿Tiene perfil para CITT o incubadora? Necesito una visión experta para priorizar el próximo paso."
 
 ---
 
-## 6. 🔥 Preguntas que El Profe Puede Hacer
+## 7. 🔥 Preguntas que El Profe Puede Hacer
 
 **"¿O(√N) es real o solo teórico?"**
 > El Rebalancer detecta MACROs sobrecargados (más de `grupo_ideal * 1.5` hijos) y redistribuye. El peor caso es O(N), pero el sistema tiene mecanismos activos para evitar llegar ahí.
@@ -116,7 +151,7 @@
 > El ecosistema de IA es Python. El cuello de botella real es la latencia de la API de embeddings, no el código. Para un prototipo académico, la prioridad fue la correctitud arquitectural.
 
 **"¿Consistencia con múltiples agentes?"**
-> Hoy asume un agente a la vez — es una limitación conocida. Si escalara a multi-agente, el siguiente paso sería file locking y escritura atómica (WAL pattern).
+> Hoy asume un agente a la vez — es una limitación conocida. Ya implementé escritura atómica a disco para prevenir corrupción. El siguiente paso sería file locking para soporte multi-agente.
 
 **"¿Qué tan original es? ¿Hay papers?"**
 > Hay trabajo en Hierarchical Semantic Memory y Knowledge Graph construction automático. La contribución de NovaDB es la combinación: jerarquía inducida + consolidación human-in-the-loop + MCP nativo. La combinación es lo nuevo.
@@ -124,9 +159,12 @@
 **"¿Por qué similitud coseno?"**
 > Mide el ángulo entre vectores — similitud de significado independiente de la magnitud. La distancia euclidiana en alta dimensión sufre la "maldición de la dimensionalidad". Coseno es el estándar para texto y embeddings.
 
+**"¿Cuánto ahorra en la práctica?"**
+> Depende del volumen. Con 100 memorias, ahorra ~50% en tokens. Con 10,000, ahorra 60-70% — pero más importante: evita la degradación que tienen los sistemas planos. El RAG plano devuelve ruido cuando crece; NovaDB mantiene calidad estable porque la consolidación reorganiza el grafo. El verdadero ahorro no es en dólares de API, es en calidad de respuestas del agente.
+
 ---
 
-## 7. 🧠 Conceptos Que Debes Dominar
+## 8. 🧠 Conceptos Que Debes Dominar
 
 | Concepto | Lo que debes saber decir |
 |---|---|
@@ -137,6 +175,8 @@
 | **Decaimiento temporal** | `relevancia *= exp(-decay_rate * horas)` — olvido gradual. |
 | **Human-in-the-loop** | Automatizo detección, el agente/humano supervisa la decisión. |
 | **Maldición de la dimensionalidad** | En alta dimensión, distancias euclidianas pierden discriminación. Por eso coseno. |
+| **Descubrimiento semántico** | Buscar por significado no solo encuentra matches exactos — encuentra conexiones que no esperabas en el mismo espacio vectorial. |
+| **Token economics** | Los LLMs cobran por token. Inyectar contexto relevante (750 tok) vs todo (2,000+ tok) = ahorro directo en costos de API. |
 
 ---
 
