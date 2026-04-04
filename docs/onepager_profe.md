@@ -74,13 +74,13 @@ La mayoría de sistemas compiten por quién inyecta menos tokens. NovaDB compite
 Relevancia del contexto = (contexto realmente útil) / (contexto total inyectado)
 ```
 
-| Sistema | Relevancia del contexto inyectado | Qué pasa con el agente |
+| Sistema | Relevancia típica | Efecto en el agente |
 |---|---|---|
-| Full-context (dump completo) | ~30-50% | Mucho ruido, pierde el foco |
-| Mem0 / Letta / Cognee | ~60-75% | Buen ahorro de tokens, pero ruido residual |
-| **NovaDB** (jerarquía + consolidación) | **~70-90%** | Contexto denso y limpio |
+| Full-context (dump completo) | ~30-50% | Mucho ruido, foco perdido, más alucinaciones |
+| Mem0 / Letta / Cognee | ~60-75% | Buen ahorro, pero ruido residual a escala |
+| **NovaDB** (jerarquía + consolidación 2 fases) | **70-90%** (ideal) | Contexto denso, limpio y mejor estructurado |
 
-Resultado: el agente recibe contexto más denso y limpio → razona mejor, alucina menos y mantiene coherencia incluso cuando la memoria crece a miles de nodos.
+Resultado: El agente razona con mayor precisión, descubre conexiones semánticas inesperadas y mantiene coherencia a largo plazo, incluso con miles de memorias. Menos tokens no siempre significa mejor respuesta; mejor densidad de relevancia sí.
 
 ### Búsqueda semántica: conexiones que no esperabas
 
@@ -97,9 +97,9 @@ Esto es lo que convierte a NovaDB en una base de datos de conocimiento y no un s
 | Sistema | Qué es | Memoria | Búsqueda | Consolidación | Escala |
 |---|---|---|---|---|---|
 | **LangChain Memory** | Buffer de contexto | Resumen que degrada | Ninguna | No | ❌ Se pierde |
-| **Mem0** | Memoria key-value | Hechos aislados planos | Vectorial lineal | Automática (sin supervisión) | ⚠️ Cloud dependiente |
+| **Mem0** | Memoria key-value | Hechos aislados planos | Vectorial lineal | Automática (sin supervisión) | ⚠️ Bueno en cloud, menos optimizado para local extremo |
 | **Letta (MemGPT)** | Memoria paginada | Bloques con paging | Lineal + paging | No | ⚠️ Requiere PostgreSQL |
-| **Cognee** | Grafo de conocimiento | Nodos y relaciones | Vectorial + grafo | Automática | ⚠️ Requiere Neo4j |
+| **Cognee** | Grafo de conocimiento | Nodos y relaciones | Vectorial + grafo | Automática | ⚠️ Requiere más infraestructura (LanceDB + graph backend) |
 | **NovaDB** | **Motor de memoria jerárquica** | **Grafo jerárquico (3 niveles)** | **Jerárquica O(√N)** | **2 fases supervisadas** | **✅ 1 archivo local** |
 
 **Lo que diferencia a NovaDB:**

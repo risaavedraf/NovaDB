@@ -90,11 +90,9 @@
 
 ### Relevancia — la métrica que importa
 
-> "Pero quiero aclarar algo importante: la mayoría de sistemas compiten por quién inyecta menos tokens. Nosotros competimos por quién inyecta los tokens más relevantes."
+> "Pero quiero ser claro: la mayoría de sistemas, como Mem0, logran ahorros brutales de tokens — hasta 90% comparado con full-context. NovaDB no busca necesariamente el mínimo absoluto de tokens. Buscamos maximizar la calidad de los tokens que sí entregamos."
 >
-> "La métrica es simple: relevancia del contexto, que es el contexto realmente útil dividido por el contexto total inyectado. Full-context tiene un 30-50% — la mayoría es ruido. Mem0, Letta, Cognee llegan al 60-75%, que es buen ahorro. NovaDB apunta al 70-90% con la jerarquía y la consolidación supervisada."
->
-> "El resultado: el agente recibe contexto más denso y limpio. Razona mejor, alucina menos, y mantiene coherencia incluso cuando la memoria crece a miles de nodos."
+> "La métrica es relevancia del contexto: el contexto realmente útil dividido por el total inyectado. Full-context tiene un 30-50% — la mayoría es ruido. Mem0 y Cognee llegan al 60-75%, que es buen ahorro. Con la jerarquía y la consolidación supervisada, apuntamos a un ratio de relevancia de 70-90%, lo que permite que el agente razone mejor y alucine menos, especialmente en proyectos largos."
 
 ### Conexiones inesperadas
 
@@ -142,7 +140,7 @@
 ## 7. 🔥 Preguntas que El Profe Puede Hacer
 
 **"¿O(√N) es real o solo teórico?"**
-> El Rebalancer detecta MACROs sobrecargados (más de `grupo_ideal * 1.5` hijos) y redistribuye. El peor caso es O(N), pero el sistema tiene mecanismos activos para evitar llegar ahí.
+> En el peor caso sigue siendo O(N), pero el Rebalancer mantiene el grafo organizado para que el caso promedio se acerque a sub-lineal. Hay papers recientes sobre hierarchical memory que validan este enfoque — sistemas con routing por niveles log N o sub-lineal. La clave es que el rebalanceo es activo, no pasivo: detecta MACROs sobrecargados y redistribuye antes de que degraden.
 
 **"¿Diferencia real con LangChain Memory o MemoryGPT?"**
 > LangChain Memory es un buffer lineal sin estructura. MemoryGPT usa paginación pero sigue siendo plano. NovaDB tiene jerarquía inducida y búsqueda sublineal — eso no existe en esas implementaciones.
