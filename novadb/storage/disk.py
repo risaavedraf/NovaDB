@@ -13,6 +13,7 @@ def save_to_json(graph: NovaGraph, path: str, embedding_dims: int = None) -> Non
     """
     Persiste el grafo completo en disco en formato legible (JSON).
     Incluye embedding_dims para validar compatibilidad al recargar.
+    Uses atomic write (temp file + rename) to prevent corruption on crash.
     """
     data = {
         "version": "1.0",
@@ -28,8 +29,15 @@ def save_to_json(graph: NovaGraph, path: str, embedding_dims: int = None) -> Non
     if directorio:
         os.makedirs(directorio, exist_ok=True)
 
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2, ensure_ascii=False)
+    tmp_path = path + ".tmp"
+    try:
+        with open(tmp_path, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
+        os.replace(tmp_path, path)  # Atomic on same filesystem
+    except Exception:
+        if os.path.exists(tmp_path):
+            os.remove(tmp_path)
+        raise
 
 
 def load_from_json(path: str) -> tuple:
@@ -61,6 +69,7 @@ def save_to_msgpack(graph: NovaGraph, path: str, embedding_dims: int = None) -> 
     Persiste el grafo en disco en formato binario (MessagePack).
     3-5x más compacto y rápido que JSON para producción.
     Incluye embedding_dims para validar compatibilidad al recargar.
+    Uses atomic write (temp file + rename) to prevent corruption on crash.
     """
     data = {
         "version": "1.0",
@@ -76,9 +85,16 @@ def save_to_msgpack(graph: NovaGraph, path: str, embedding_dims: int = None) -> 
     if directorio:
         os.makedirs(directorio, exist_ok=True)
 
-    with open(path, "wb") as f:
-        packed = msgpack.packb(data, use_bin_type=True)
-        f.write(packed)
+    tmp_path = path + ".tmp"
+    try:
+        with open(tmp_path, "wb") as f:
+            packed = msgpack.packb(data, use_bin_type=True)
+            f.write(packed)
+        os.replace(tmp_path, path)  # Atomic on same filesystem
+    except Exception:
+        if os.path.exists(tmp_path):
+            os.remove(tmp_path)
+        raise
 
 
 def load_from_msgpack(path: str) -> tuple:

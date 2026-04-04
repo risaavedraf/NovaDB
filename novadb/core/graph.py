@@ -274,11 +274,8 @@ class NovaGraph:
         return sum(1 for n in self.nodes.values() if n.tipo == tipo)
 
     def get_node(self, node_id: str) -> Optional[Node]:
-        """Retrieves a node by exact UUID and updates its access count and relevancia."""
-        nodo = self.nodes.get(node_id)
-        if nodo:
-            self.update_relevancia_on_access(nodo)
-        return nodo
+        """Retrieves a node by exact UUID. Pure read — no side effects on relevancia."""
+        return self.nodes.get(node_id)
 
     def olvidar(self, node_id: str) -> Optional[List[str]]:
         """

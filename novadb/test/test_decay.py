@@ -64,15 +64,26 @@ class TestDecay(unittest.TestCase):
         expected = 1.0 * math.exp(-decay_rate * 10)
         self.assertAlmostEqual(nodo.relevancia, expected, places=5)
 
-    def test_get_node_actualiza_relevancia(self):
+    def test_get_node_no_mutate_relevancia(self):
+        """get_node() is a pure read — no side effects on relevancia or accesos."""
         nodo = Node(text="Test", vector=self.v_gato, tipo="MEMORIA", relevancia=0.5)
         self.graph.nodes[nodo.id] = nodo
         
         retrieved = self.graph.get_node(nodo.id)
         
         self.assertIsNotNone(retrieved)
-        self.assertGreater(retrieved.relevancia, 0.5)
-        self.assertEqual(retrieved.accesos, 1)
+        self.assertEqual(retrieved.relevancia, 0.5)
+        self.assertEqual(retrieved.accesos, 0)
+
+    def test_update_relevancia_on_access_boosts(self):
+        """update_relevancia_on_access() explicitly boosts relevancia."""
+        nodo = Node(text="Test", vector=self.v_gato, tipo="MEMORIA", relevancia=0.5)
+        self.graph.nodes[nodo.id] = nodo
+        
+        self.graph.update_relevancia_on_access(nodo)
+        
+        self.assertGreater(nodo.relevancia, 0.5)
+        self.assertEqual(nodo.accesos, 1)
 
     def test_combined_score_mezcla_similitud_y_relevancia(self):
         cosine_sim = 0.9

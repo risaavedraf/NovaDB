@@ -417,9 +417,15 @@ class TestPersistencAndConsolidationIntegration(unittest.TestCase):
         db.insert("Node B", tipo="MEMORIA")
         db.insert("Node C", tipo="MEMORIA")
 
-        db.get(list(db.graph.nodes.keys())[0])
-        db.get(list(db.graph.nodes.keys())[0])
-        db.get(list(db.graph.nodes.keys())[1])
+        # Access tracking is explicit — get_node() is a pure read
+        node_a_id = list(db.graph.nodes.keys())[0]
+        node_a = db.graph.nodes[node_a_id]
+        db.graph.update_relevancia_on_access(node_a)
+        db.graph.update_relevancia_on_access(node_a)
+
+        node_b_id = list(db.graph.nodes.keys())[1]
+        node_b = db.graph.nodes[node_b_id]
+        db.graph.update_relevancia_on_access(node_b)
 
         stats = db.stats()
         self.assertIsNotNone(stats["nodo_mas_accedido"])

@@ -112,7 +112,7 @@ class TestPersistenceRoundtrip(unittest.TestCase):
         json_path = os.path.join(self.temp_dir, "test.json")
 
         disk.save_to_json(graph, json_path)
-        loaded_graph = disk.load_from_json(json_path)
+        loaded_graph, _ = disk.load_from_json(json_path)
 
         self.assertEqual(graph.count(), loaded_graph.count())
         self.assertEqual(graph.count("MACRO"), loaded_graph.count("MACRO"))
@@ -125,7 +125,7 @@ class TestPersistenceRoundtrip(unittest.TestCase):
         msgpack_path = os.path.join(self.temp_dir, "test.msgpack")
 
         disk.save_to_msgpack(graph, msgpack_path)
-        loaded_graph = disk.load_from_msgpack(msgpack_path)
+        loaded_graph, _ = disk.load_from_msgpack(msgpack_path)
 
         self.assertEqual(graph.count(), loaded_graph.count())
         self.assertEqual(graph.count("MACRO"), loaded_graph.count("MACRO"))
@@ -138,7 +138,7 @@ class TestPersistenceRoundtrip(unittest.TestCase):
         json_path = os.path.join(self.temp_dir, "test.json")
 
         disk.save_to_json(graph, json_path)
-        loaded_graph = disk.load_from_json(json_path)
+        loaded_graph, _ = disk.load_from_json(json_path)
 
         self.assertEqual(len(loaded_graph.indice_macro), len(graph.indice_macro))
         self.assertEqual(len(loaded_graph.indice_medio), len(graph.indice_medio))
@@ -152,7 +152,7 @@ class TestPersistenceRoundtrip(unittest.TestCase):
         original_relevancias = {n.id: n.relevancia for n in graph.nodes.values()}
 
         disk.save_to_msgpack(graph, msgpack_path)
-        loaded_graph = disk.load_from_msgpack(msgpack_path)
+        loaded_graph, _ = disk.load_from_msgpack(msgpack_path)
 
         for node_id, original_rel in original_relevancias.items():
             loaded_node = loaded_graph.nodes.get(node_id)
@@ -167,7 +167,7 @@ class TestPersistenceRoundtrip(unittest.TestCase):
         original_accesos = {n.id: n.accesos for n in graph.nodes.values()}
 
         disk.save_to_json(graph, json_path)
-        loaded_graph = disk.load_from_json(json_path)
+        loaded_graph, _ = disk.load_from_json(json_path)
 
         for node_id, original_acc in original_accesos.items():
             loaded_node = loaded_graph.nodes.get(node_id)
@@ -188,7 +188,7 @@ class TestPersistenceRoundtrip(unittest.TestCase):
             }
 
         disk.save_to_json(graph, json_path)
-        loaded_graph = disk.load_from_json(json_path)
+        loaded_graph, _ = disk.load_from_json(json_path)
 
         for node_id, original_rel in original_rels.items():
             loaded_node = loaded_graph.nodes.get(node_id)
@@ -205,7 +205,7 @@ class TestPersistenceRoundtrip(unittest.TestCase):
         original_meta = {n.id: dict(n.metadata) for n in graph.nodes.values()}
 
         disk.save_to_json(graph, json_path)
-        loaded_graph = disk.load_from_json(json_path)
+        loaded_graph, _ = disk.load_from_json(json_path)
 
         for node_id, original_m in original_meta.items():
             loaded_node = loaded_graph.nodes.get(node_id)
@@ -218,7 +218,7 @@ class TestPersistenceRoundtrip(unittest.TestCase):
         msgpack_path = os.path.join(self.temp_dir, "test.msgpack")
 
         disk.save_to_msgpack(graph, msgpack_path)
-        loaded_graph = disk.load_from_msgpack(msgpack_path)
+        loaded_graph, _ = disk.load_from_msgpack(msgpack_path)
 
         for node_id, node in graph.nodes.items():
             loaded_node = loaded_graph.nodes.get(node_id)
@@ -232,7 +232,7 @@ class TestPersistenceRoundtrip(unittest.TestCase):
         original_times = {n.id: (n.created_at, n.updated_at) for n in graph.nodes.values()}
 
         disk.save_to_json(graph, json_path)
-        loaded_graph = disk.load_from_json(json_path)
+        loaded_graph, _ = disk.load_from_json(json_path)
 
         for node_id, (orig_created, orig_updated) in original_times.items():
             loaded_node = loaded_graph.nodes.get(node_id)
@@ -246,7 +246,7 @@ class TestPersistenceRoundtrip(unittest.TestCase):
         json_path = os.path.join(self.temp_dir, "test.json")
 
         disk.save_to_json(graph, json_path)
-        loaded_graph = disk.load_from_json(json_path)
+        loaded_graph, _ = disk.load_from_json(json_path)
 
         self.assertEqual(loaded_graph.k_vecinos, 10)
 
@@ -296,7 +296,7 @@ class TestPersistenceCorruption(unittest.TestCase):
         with open(wrong_struct, "w") as f:
             json.dump({"wrong_key": "value"}, f)
 
-        loaded_graph = disk.load_from_json(wrong_struct)
+        loaded_graph, _ = disk.load_from_json(wrong_struct)
         self.assertEqual(loaded_graph.count(), 0)
 
     def test_load_json_missing_required_fields(self):
@@ -355,7 +355,7 @@ class TestPersistenceVectorIntegrity(unittest.TestCase):
         json_path = os.path.join(self.temp_dir, "vectors.json")
 
         disk.save_to_json(graph, json_path)
-        loaded_graph = disk.load_from_json(json_path)
+        loaded_graph, _ = disk.load_from_json(json_path)
 
         loaded_node = loaded_graph.nodes[node.id]
         np.testing.assert_array_almost_equal(loaded_node.vector, original_vector)
@@ -370,7 +370,7 @@ class TestPersistenceVectorIntegrity(unittest.TestCase):
         msgpack_path = os.path.join(self.temp_dir, "vectors.msgpack")
 
         disk.save_to_msgpack(graph, msgpack_path)
-        loaded_graph = disk.load_from_msgpack(msgpack_path)
+        loaded_graph, _ = disk.load_from_msgpack(msgpack_path)
 
         loaded_node = loaded_graph.nodes[node.id]
         np.testing.assert_array_almost_equal(loaded_node.vector, original_vector)
@@ -386,7 +386,7 @@ class TestPersistenceVectorIntegrity(unittest.TestCase):
         json_path = os.path.join(self.temp_dir, "dtype.json")
 
         disk.save_to_json(graph, json_path)
-        loaded_graph = disk.load_from_json(json_path)
+        loaded_graph, _ = disk.load_from_json(json_path)
 
         loaded_node = loaded_graph.nodes[node.id]
         self.assertEqual(loaded_node.vector.dtype, np.float32)
@@ -415,7 +415,7 @@ class TestPersistenceMultipleCycles(unittest.TestCase):
 
         for cycle in range(3):
             disk.save_to_json(graph, json_path)
-            graph = disk.load_from_json(json_path)
+            graph, _ = disk.load_from_json(json_path)
 
             self.assertEqual(graph.count(), 5)
             for node_id in node_ids:
@@ -432,7 +432,7 @@ class TestPersistenceMultipleCycles(unittest.TestCase):
 
         for cycle in range(3):
             disk.save_to_msgpack(graph, msgpack_path)
-            graph = disk.load_from_msgpack(msgpack_path)
+            graph, _ = disk.load_from_msgpack(msgpack_path)
 
             self.assertEqual(graph.count(), 5)
 

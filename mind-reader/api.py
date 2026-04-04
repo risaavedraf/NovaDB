@@ -19,10 +19,13 @@ app.add_middleware(
 )
 
 # 2. PARCHE AUTENTICACION BASE
-API_KEY = os.getenv("MINDREADER_SECRET", "nova-secret-key-2026")
+API_KEY = os.getenv("MINDREADER_SECRET")
+if not API_KEY:
+    print("[WARNING] MINDREADER_SECRET no configurado. El API queda sin autenticación. "
+          "Seteá la variable de entorno para producción.")
 
 async def verify_api_key(x_api_key: str = Header(None)):
-    if x_api_key != API_KEY:
+    if API_KEY and x_api_key != API_KEY:
         raise HTTPException(status_code=401, detail="Acceso denegado a la mente de Nova.")
     return x_api_key
 
@@ -72,7 +75,7 @@ def get_graph():
         
         # Enlaces Gravitacionales con Similitud Real
         for h_id in n.hijos:
-            h_node = db.get(h_id)
+            h_node = db.graph.nodes.get(h_id)
             sim = cosine_sim(n.vector, h_node.vector) if h_node else 0.5
             links.append({
                 "source": nid, 
@@ -83,7 +86,7 @@ def get_graph():
             })
             
         for v_id in n.vecinos:
-            v_node = db.get(v_id)
+            v_node = db.graph.nodes.get(v_id)
             sim = cosine_sim(n.vector, v_node.vector) if v_node else 0.4
             links.append({
                 "source": nid, 
