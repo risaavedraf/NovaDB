@@ -22,7 +22,7 @@ Las soluciones existentes comprimen el historial en resúmenes que pierden detal
 Un sistema diseñado desde cero para que los agentes de IA construyan, organicen y consulten su propio conocimiento. Combina en un solo motor lo que normalmente requiere tres tecnologías separadas:
 
 - **Almacenamiento jerárquico** — organiza el conocimiento en niveles de abstracción (MACRO → MEDIO → MEMORIA)
-- **Búsqueda semántica O(√N)** — encuentra por *significado*, no por palabras exactas, navegando la jerarquía en lugar de recorrer todo el grafo
+- **Búsqueda semántica (diseñada para O(√N) a escala)** — encuentra por *significado*, no por palabras exactas, navegando la jerarquía en lugar de recorrer todo el grafo
 - **Integración MCP nativa** — 14 herramientas expuestas vía Model Context Protocol, permitiendo que cualquier agente compatible (Claude, Gemini, GPT) use NovaDB como su memoria sin código de integración
 
 La diferencia clave: los sistemas actuales guardan *hechos*. NovaDB guarda *conocimiento* — con las conexiones entre conceptos que hacen que el conocimiento sea útil.
@@ -58,13 +58,13 @@ Las soluciones actuales funcionan con 50 memorias. Con 10,000, colapsan. NovaDB 
 
 El token es la moneda de los LLMs. Cada token inyectado en contexto es dinero y tiempo. NovaDB inyecta solo lo relevante navegando la jerarquía, en vez de volcar todo o buscar en lista plana.
 
-| Volumen | Tokens/query (RAG plano) | Tokens/query (NovaDB) | Ahorro | Ahorro mensual (Sonnet) |
+| Volumen | Tokens/query (RAG plano) | Tokens/query (NovaDB)* | Ahorro* | Ahorro mensual (Sonnet)* |
 |---|---|---|---|---|
 | 100 memorias | 1,500 | 750 | **50%** | ~$1 |
 | 1,000 memorias | 1,500 | 750 | **50%** | ~$4 |
 | 10,000 memorias | 2,000+ (ruido) | 750 | **60-70%** | ~$14-34 |
 
-*(Asumiendo 20 queries/día. GPT-4o: $2.50/1M input tokens. Claude Sonnet: $3/1M input tokens.)*
+*(Proyecciones teóricas basadas en el diseño jerárquico. Asumiendo 20 queries/día. GPT-4o: $2.50/1M input tokens. Claude Sonnet: $3/1M input tokens.)*
 
 ### Pero lo que importa no es cuántos tokens — es cuán relevantes son
 
@@ -78,7 +78,7 @@ Relevancia del contexto = (contexto realmente útil) / (contexto total inyectado
 |---|---|---|
 | Full-context (dump completo) | ~30-50% | Mucho ruido, foco perdido, más alucinaciones |
 | Mem0 / Letta / Cognee | ~60-75% | Buen ahorro, pero ruido residual a escala |
-| **NovaDB** (jerarquía + consolidación 2 fases) | **70-90%** (ideal) | Contexto denso, limpio y mejor estructurado |
+| **NovaDB** (jerarquía + consolidación 2 fases) | **70-90%** (objetivo de diseño) | Contexto denso, limpio y mejor estructurado |
 
 Resultado: El agente razona con mayor precisión, descubre conexiones semánticas inesperadas y mantiene coherencia a largo plazo, incluso con miles de memorias. Menos tokens no siempre significa mejor respuesta; mejor densidad de relevancia sí.
 
@@ -100,7 +100,7 @@ Esto es lo que convierte a NovaDB en una base de datos de conocimiento y no un s
 | **Mem0** | Memoria key-value | Hechos aislados planos | Vectorial lineal | Automática (sin supervisión) | ⚠️ Bueno en cloud, menos optimizado para local extremo |
 | **Letta (MemGPT)** | Memoria paginada | Bloques con paging | Lineal + paging | No | ⚠️ Requiere PostgreSQL |
 | **Cognee** | Grafo de conocimiento | Nodos y relaciones | Vectorial + grafo | Automática | ⚠️ Requiere más infraestructura (LanceDB + graph backend) |
-| **NovaDB** | **Motor de memoria jerárquica** | **Grafo jerárquico (3 niveles)** | **Jerárquica O(√N)** | **2 fases supervisadas** | **✅ 1 archivo local** |
+| **NovaDB** | **Motor de memoria jerárquica** | **Grafo jerárquico (3 niveles)** | **Jerárquica (O(√N) a escala)** | **2 fases supervisadas** | **✅ 1 archivo local** |
 
 **Lo que diferencia a NovaDB:**
 1. **Es una base de datos, no un buffer** — diseñado para 10K+ nodos sin degradar
@@ -135,7 +135,7 @@ Esto es lo que convierte a NovaDB en una base de datos de conocimiento y no un s
                │ Python API
 ┌──────────────▼────────────────────────┐
 │          NovaDB Core                   │
-│ Grafo Jerárquico · Búsqueda O(√N)     │
+│ Grafo Jerárquico · Búsqueda a O(√N)     │
 │ Consolidación 2F · Rebalanceo          │
 └──────────────┬────────────────────────┘
                │ MessagePack / JSON
@@ -155,10 +155,10 @@ Esto es lo que convierte a NovaDB en una base de datos de conocimiento y no un s
 ## Estado Actual — Beta Funcional
 
 **Implementado y operativo:**
-- Motor de grafo semántico: **93 nodos, 934 conexiones, 13 categorías MACRO**
+- Motor de grafo semántico: **~100 nodos, ~1,000 conexiones, 13 categorías MACRO**
 - Servidor MCP con **14 herramientas** integradas (memorizar, recordar, consolidar, analizar, exportar, etc.)
-- Suite de **159 tests passing, 0 fallos** (core, búsqueda, consolidación, persistencia, decay, edge cases, integración, MCP)
-- Auditoría de código completada — 23 hallazgos identificados, 6 críticos resueltos, 16 tests preexistentes corregidos
+- Suite de **166 tests passing, 0 fallos** (core, búsqueda, consolidación, persistencia, decay, edge cases, integración, MCP, mitosis)
+- Auditoría de código completada — 23 hallazgos identificados, 6 corregidos (incluyendo los 3 críticos más urgentes), 16 tests preexistentes corregidos
 - **MindReader**: Visor 3D interactivo (Astro + React + FastAPI)
 - Consolidación en **2 fases** (Proponer → Ejecutar) — diseño Human-in-the-loop
 - Persistencia atómica en MessagePack y JSON con validación de dimensiones
@@ -172,7 +172,7 @@ Esto es lo que convierte a NovaDB en una base de datos de conocimiento y no un s
 
 Asesoramiento y visión experta en:
 
-**1. Validación técnica y académica** — ¿El enfoque jerárquico para memoria semántica y la complejidad O(√N) tienen bases sólidas? ¿Qué tan innovador es el uso de consolidación interactiva en 2 fases desde una perspectiva de ingeniería?
+**1. Validación técnica y académica** — ¿El enfoque jerárquico para memoria semántica y la complejidad O(√N) proyectada tienen bases sólidas? ¿Qué tan innovador es el uso de consolidación interactiva en 2 fases desde una perspectiva de ingeniería?
 
 **2. Evaluación de potencial CITT** — Basado en el prototipo funcional actual, ¿considera que el proyecto tiene el perfil adecuado para postular al CITT? De ser así, ¿qué aspectos cree que deberían fortalecerse para una postulación exitosa?
 

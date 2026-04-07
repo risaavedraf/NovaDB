@@ -225,5 +225,117 @@ class TestRebalancer(unittest.TestCase):
         distancia = self.rebalancer._distancia_promedio(mem.id, [medio])
         self.assertEqual(distancia, float('inf'))
 
+
+class TestMitosis(unittest.TestCase):
+    """Tests para la función de mitosis (división de MEDIO sobrecargado)."""
+
+    def setUp(self):
+        self.graph = NovaGraph()
+        self.rebalancer = Rebalancer(self.graph)
+
+    def _crear_macro(self, texto="Macro Test"):
+        v = np.array([0.5, 0.5, 0.0], dtype=np.float32)
+        n = Node(text=texto, vector=v, tipo="MACRO")
+        self.graph.nodes[n.id] = n
+        return n
+
+    def _crear_medio_con_hijos(self, macro, n_hijos=10, texto="Medio Sobrecargado"):
+        """Crea un MEDIO con hijos de vectores variados para que K-Means los separe."""
+        v_medio = np.array([0.5, 0.5, 0.0], dtype=np.float32)
+        medio = Node(text=texto, vector=v_medio, tipo="MEDIO")
+        medio.padres.append(macro.id)
+        macro.hijos.append(medio.id)
+        self.graph.nodes[medio.id] = medio
+
+        for i in range(n_hijos):
+            # Dos clusters bien separados
+            cluster = i % 2
+            if cluster == 0:
+                v = np.array([0.9, 0.1, float(i * 0.01)], dtype=np.float32)
+            else:
+                v = np.array([0.1, 0.9, float(i * 0.01)], dtype=np.float32)
+            # Normalizar
+            v = v / np.linalg.norm(v)
+            hijo = Node(text=f"Memoria {i}", vector=v, tipo="MEMORIA")
+            hijo.padres.append(medio.id)
+            medio.hijos.append(hijo.id)
+            self.graph.nodes[hijo.id] = hijo
+
+        return medio
+
+    def test_mitosis_divide_en_k_clusters(self):
+        """Mitosis con k=2 debe producir exactamente 2 nodos MEDIO."""
+        macro = self._crear_macro()
+        medio = self._crear_medio_con_hijos(macro, n_hijos=10)
+        original_id = medio.id
+
+        nuevos = self.rebalancer.mitosis(medio, k=2)
+
+        self.assertEqual(len(nuevos), 2)
+        # El original debe haber sido eliminado
+        self.assertNotIn(original_id, self.graph.nodes)
+
+    def test_mitosis_todos_los_hijos_reasignados(self):
+        """Después de la mitosis, cada hijo debe tener un nuevo padre MEDIO."""
+        macro = self._crear_macro()
+        medio = self._crear_medio_con_hijos(macro, n_hijos=8)
+        hijo_ids = list(medio.hijos)
+
+        nuevos = self.rebalancer.mitosis(medio, k=2)
+
+        self.assertEqual(len(nuevos), 2)
+        for hid in hijo_ids:
+            nodo = self.graph.nodes.get(hid)
+            self.assertIsNotNone(nodo, f"Hijo {hid} fue eliminado incorrectamente")
+            tiene_padre_medio = any(
+                self.graph.nodes.get(p) and self.graph.nodes[p].tipo == "MEDIO"
+                for p in nodo.padres
+            )
+            self.assertTrue(tiene_padre_medio, f"Hijo {hid} quedó sin padre MEDIO")
+
+    def test_mitosis_hereda_macro(self):
+        """Los nodos MEDIO creados deben estar conectados al MACRO original."""
+        macro = self._crear_macro()
+        medio = self._crear_medio_con_hijos(macro, n_hijos=8)
+
+        nuevos = self.rebalancer.mitosis(medio, k=2)
+
+        for nuevo in nuevos:
+            self.assertIn(macro.id, nuevo.padres)
+            self.assertIn(nuevo.id, macro.hijos)
+
+    def test_mitosis_aborta_con_pocos_hijos(self):
+        """Mitosis debe rechazar nodos con menos de 4 hijos."""
+        macro = self._crear_macro()
+        medio = self._crear_medio_con_hijos(macro, n_hijos=3)
+
+        nuevos = self.rebalancer.mitosis(medio, k=2)
+
+        self.assertEqual(nuevos, [])
+        # El MEDIO original debe seguir intacto
+        self.assertIn(medio.id, self.graph.nodes)
+
+    def test_fisionar_por_id_valido(self):
+        """fisionar() debe devolver success=True con un ID correcto."""
+        macro = self._crear_macro()
+        medio = self._crear_medio_con_hijos(macro, n_hijos=8)
+
+        resultado = self.rebalancer.fisionar(medio.id, k=2)
+
+        self.assertTrue(resultado["success"])
+        self.assertEqual(resultado["clusters_creados"], 2)
+
+    def test_fisionar_id_inexistente(self):
+        """fisionar() debe devolver success=False si el ID no existe."""
+        resultado = self.rebalancer.fisionar("id-que-no-existe")
+        self.assertFalse(resultado["success"])
+
+    def test_fisionar_nodo_no_medio(self):
+        """fisionar() debe rechazar nodos que no sean MEDIO."""
+        macro = self._crear_macro()
+        resultado = self.rebalancer.fisionar(macro.id)
+        self.assertFalse(resultado["success"])
+
+
 if __name__ == '__main__':
     unittest.main()

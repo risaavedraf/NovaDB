@@ -9,7 +9,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
 
 import logging
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 
 from ..serializers import serialize_stats
 from ..config import get_config
@@ -111,6 +111,29 @@ def rebalancear() -> Dict[str, Any]:
         return {"success": False, "error": str(e)}
 
 
+def fisionar(medio_id: str, k: Optional[int] = None) -> Dict[str, Any]:
+    """
+    Divide un nodo MEDIO sobrecargado en K nodos MEDIO usando K-Means (mitosis).
+    Útil cuando un nodo acumula demasiados hijos y no tiene hermanos a quienes redistribuir.
+
+    Args:
+        medio_id: ID del nodo MEDIO a dividir.
+        k:        Nº de clusters (None = calculado automáticamente por el motor).
+
+    Returns:
+        Resultado con los nuevos nodos MEDIO creados.
+    """
+    try:
+        db = get_db()
+        result = db.fisionar(medio_id, k=k)
+        if result.get("success"):
+            db.save(get_config().db_path)
+        return result
+    except Exception as e:
+        logger.error("Error fisionando nodo %s: %s", medio_id, e)
+        return {"success": False, "error": str(e)}
+
+
 def register(mcp):
     @mcp.tool(name="analizar", description="Obtiene estadísticas completas del grafo de memoria.")
     def _analizar() -> Dict[str, Any]:
@@ -127,3 +150,14 @@ def register(mcp):
     @mcp.tool(name="rebalancear", description="Fuerza un rebalanceo del grafo de memoria y reorganiza nodos.")
     def _rebalancear() -> Dict[str, Any]:
         return rebalancear()
+
+    @mcp.tool(
+        name="fisionar",
+        description=(
+            "Divide un nodo MEDIO sobrecargado en K nodos MEDIO usando K-Means interno (mitosis). "
+            "Usa esto cuando un MEDIO tiene demasiados hijos y no tiene hermanos a quienes redistribuir. "
+            "Provee el ID del nodo MEDIO a dividir. El parámetro 'k' es opcional (por defecto se calcula automáticamente)."
+        )
+    )
+    def _fisionar(medio_id: str, k: Optional[int] = None) -> Dict[str, Any]:
+        return fisionar(medio_id, k)

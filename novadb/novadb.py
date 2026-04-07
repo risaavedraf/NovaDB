@@ -353,6 +353,22 @@ Fragmentos:
             self._trigger_autosave()
         return resultado
 
+    def fisionar(self, medio_id: str, k: Optional[int] = None) -> Dict[str, Any]:
+        """
+        Divide un nodo MEDIO sobrecargado en K nodos MEDIO vía K-Means (mitosis).
+
+        Args:
+            medio_id: ID del nodo MEDIO a dividir.
+            k:        Nº de clusters deseados. None → calculado automáticamente.
+
+        Returns:
+            Dict con éxito, clusters creados y nuevos nodos.
+        """
+        resultado = self.rebalancer.fisionar(medio_id, k=k)
+        if resultado.get("success"):
+            self._trigger_autosave()
+        return resultado
+
     def _check_auto_rebalance(self) -> None:
         """Auto-rebalance check on operations if enabled."""
         if self.rebalancer.necesita_rebalanceo():

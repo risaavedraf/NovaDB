@@ -85,20 +85,11 @@ def get_graph():
                 "sim": sim
             })
             
-        for v_id in n.vecinos:
-            v_node = db.graph.nodes.get(v_id)
-            sim = cosine_sim(n.vector, v_node.vector) if v_node else 0.4
-            links.append({
-                "source": nid, 
-                "target": v_id, 
-                "value": sim, 
-                "label": f"Familiaridad: {sim:.2f}",
-                "sim": sim
-            })
+        # OMITIMOS VECINOS TEMPORALMENTE PARA EVITAR "HAIRBALLS" VISUALES
+        # for v_id in n.vecinos: ...
             
-        for conn in n.conexiones:
-            # Puentes definidos manualmente
-            links.append({"source": nid, "target": conn["target"], "value": conn.get("peso", 1.0)})
+        # OMITIMOS CONEXIONES CRUZADAS TEMPORALMENTE
+        # for conn in n.conexiones: ...
             
     return {"nodes": nodes, "links": links}
 

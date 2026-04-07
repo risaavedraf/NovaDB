@@ -40,7 +40,7 @@ def serialize_stats(stats: Dict[str, Any]) -> Dict[str, Any]:
     """Ensure stats dict is JSON-serializable."""
     serialized = {}
     for key, value in stats.items():
-        if isinstance(value, (np.integer, np.floating)):
+        if isinstance(value, (np.integer, np.floating, np.bool_)):
             serialized[key] = value.item()
         elif isinstance(value, np.ndarray):
             serialized[key] = value.tolist()

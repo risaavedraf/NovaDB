@@ -23,6 +23,13 @@ export default function GraphViewer() {
       })
       .then(json => {
         setData(json);
+        // Expandir el universo visual forzando que se separen
+        setTimeout(() => {
+            if (fgRef.current) {
+                fgRef.current.d3Force("charge").strength(-400);
+                fgRef.current.d3Force("link").distance(60);
+            }
+        }, 100);
       })
       .catch(err => console.error("Error cargando mente de Nova:", err));
   }, []);
